@@ -512,6 +512,7 @@
       quiz_lang: cfg ? cfg.quizLang : "", ui_lang: cfg ? cfg.uiLang : "", scope: cfg ? cfg.scope : "", source: cfg ? cfg.source : "", participants: cfg ? cfg.parts : 0 });
     curRecord = (cfg && !cfg.sample) ? makeRecord(list, mins) : null;                  // results stay on this device
     if (curRecord) addHistory(curRecord);
+    photoReset();                                                       // a new final page: the photo box starts empty
     var basic = S.edition === "basic";
     $("csvBtn").hidden = basic || !curRecord; $("saveCloud").hidden = basic || !(curRecord && ownConnected()); $("endHome").hidden = basic;
     $("saveRedo").hidden = basic || !(cfg && !cfg.sample); clearOnNextSetup = true;           // the next time the setup page opens it starts empty (name kept)

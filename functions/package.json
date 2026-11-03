@@ -1,0 +1,9 @@
+{
+  "name": "obq-functions",
+  "private": true,
+  "description": "Firebase Functions for the OBQ contact form (one-time code by email, message limits). No secrets in this folder.",
+  "main": "index.js",
+  "engines": { "node": "20" },
+  "scripts": { "test": "node --test test/lib.test.js" },
+  "dependencies": { "firebase-admin": "^12.6.0", "firebase-functions": "^6.0.1", "nodemailer": "^6.9.15" }
+}

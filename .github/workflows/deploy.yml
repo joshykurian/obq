@@ -1,7 +1,7 @@
-# Builds the app and publishes it with GitHub Pages on every push to main. The very basic version is published at /basic/ next to the full app.
+# Runs the checks (tests/, functions/, tools/check_modules.js) and, only when they all pass, builds the app and publishes it with GitHub Pages on every push to main. The very basic version is published at /basic/ next to the full app.
 # One-time setup: Settings > Pages > Source = "GitHub Actions".
 # Optional secrets: OBQ_BANK_KEY (the key that decrypts the full question bank, src/cfg3_bank.enc.json; without it the small sample bank is used)
-# SITE_CONFIG_JSON (the operator name and contact email shown in the Terms and Conditions) and FIREBASE_CONFIG_JSON (Settings > Secrets and variables > Actions) holding your Firebase web
+# SITE_CONFIG_JSON (the operator name and contact email shown in the Terms and Conditions, and the contact form settings: contactProvider, contactKey or contactEndpoint) and FIREBASE_CONFIG_JSON (Settings > Secrets and variables > Actions) holding your Firebase web
 # config as JSON, to turn on sign-in with Firebase on the published site. Without it the site runs in local mode.
 name: Build and deploy
 on:
@@ -10,7 +10,25 @@ on:
 permissions: { contents: read, pages: write, id-token: write }
 concurrency: { group: pages, cancel-in-progress: true }
 jobs:
+  checks:                                   # no secrets are needed: the checks use the small sample bank and a fake Firebase
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: pip install openpyxl pillow cryptography playwright
+      - run: npm install --no-audit --no-fund
+      - run: python -m playwright install --with-deps chromium
+      - name: Modules declare what they use
+        run: node tools/check_modules.js
+      - name: Server functions
+        run: cd functions && node --test test/lib.test.js
+      - name: All checks (build, translations, accessibility, offline, banks, sharing, contact, privacy, legal)
+        run: python tests/run_all.py
   build:
+    needs: checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

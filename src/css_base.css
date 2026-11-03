@@ -283,7 +283,7 @@
   @media (orientation: landscape) and (min-width: 640px) {
     #end.active { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); grid-template-areas: "w r" "t r" "b r" "m r"; align-content: center; column-gap: 24px; row-gap: 14px; }
     #end #winner { grid-area: w; }
-    #end .lbwrap { grid-area: r; align-self: start; }
+    #end .endright { grid-area: r; align-self: start; }
     #end .take { grid-area: t; }
     #end .row { grid-area: b; }
     #end .export-msg { grid-area: m; }

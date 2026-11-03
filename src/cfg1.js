@@ -10,10 +10,14 @@ var QUIZ_SETTINGS = {
   edition: "full",                    // "full" = all features on the Home page. "lite" = OBQ Lite edition: only the quick quiz, the demo contest and the instructions
   requireLogin: true,                 // true = Quiz Masters must sign up / sign in first
   requireTerms: true,                 // true = new accounts must accept the Terms and Conditions (which include the analytics notice); existing accounts accept again when termsVersion changes
-  termsVersion: "2026-10",            // the version of src/terms.html that new accounts accept at sign-up (stored with the account)
+  verseImages: {},                    // optional: your own pictures for the Verse of the Day, as theme name -> image address, for example { cross: "pictures/cross.jpg" } (themes: cross, shepherd, book, stars, path, lamp, hills, tower, wings, globe, dove, sunrise, tree, door)
+  appVersion: "1.10.0",                // sent with the optional "Share my analytics" snapshot, so the developers know which version it came from
+  termsVersion: "2026-12",            // the version of src/terms.html that new accounts accept at sign-up (stored with the account)
   reacceptTerms: false,               // false = the Terms are accepted once, at sign-up. true = existing accounts must accept again when termsVersion changes
   operatorName: "",                   // shown in the Terms ("provided by ...") - fill in before launch, or set it in private/site.config.json
   contactEmail: "",                   // shown in the Terms as the contact for questions and data requests - or set it in private/site.config.json
+  allowCoreExport: true,              // true = Quiz Masters can download the built-in OBQ questions as an Excel file (to translate them). false = no download
+  contact: { provider: "", region: "us-central1" },   // the contact form needs the Firebase Functions in functions/ : set provider "functions" (and region) in private/site.config.json after you have deployed them
   announcement: { title: "", text: "", date: "", linkText: "", linkUrl: "" },   // optional notice on the Home page (an event, a campaign, news); leave empty for none. Or set it in private/site.config.json
   defaultTheme: "dark",               // "dark", "light" or "system"; each user can change it in Settings
   requireEmailVerification: true,     // true = a new account must confirm its email address (link sent by Firebase) before it can be used. Needs Firebase; local test mode cannot send email

@@ -1,0 +1,11 @@
+{
+  "name": "obq",
+  "private": true,
+  "description": "Oral Bible Quiz (OBQ). The app itself needs no npm packages: this file is only for the checks.",
+  "scripts": {
+    "check": "node tools/check_modules.js && python tests/run_all.py"
+  },
+  "devDependencies": {
+    "acorn": "^8.12.1"
+  }
+}

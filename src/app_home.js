@@ -15,6 +15,11 @@
     help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>',
     shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
     star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+    monitor: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+    camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+    image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
     left: '<path d="M15 5l-7 7 7 7"/>',
     house: '<path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/>',
@@ -73,36 +78,37 @@
     firebase:  { icon: "cloud",   t: "hOwn",       d: "hOwnD",       lite: false, go: function () { openResults("panelOwn"); } },
     settings:  { icon: "gear",    t: "hSettings",  d: "hSettingsD",  lite: true,  go: function () { openSettings(); } },
     help:      { icon: "help",    t: "hHelp",      d: "hHelpD",      lite: true,  go: function () { openQmGuide(); } },
+    about:     { icon: "info",    t: "hAbout",     d: "hAboutD",     lite: true,  go: function () { openAbout(); } },
     admin:     { icon: "shield",  t: "hAdmin",     d: "hAdminD",     lite: false, adminOnly: true, go: openAdmin }
   };
   var HOME_GROUPS = [
     { id: "run",     title: "hGroupRun",  items: ["lite", "demo", "setup", "saved"] },
     { id: "builder", title: "hBuilder",   desc: "hBuilderD", box: true, head: "builder", icon: "tools", headGo: function () { openBuilder(""); }, items: ["bank", "kb"] },
     { id: "results", title: "hGroupResults", desc: "hGroupResultsD", box: true, head: "resultshead", icon: "chart", headGo: function () { openResults(); }, items: ["results", "firebase"] },
-    { id: "more",    title: "hGroupMore", items: ["analytics", "settings", "help", "admin"] }
+    { id: "more",    title: "hGroupMore", cols: 3, items: ["analytics", "settings", "help", "about", "admin"] }
   ];
   function homeItemOK(id, li) { var it = HOME_ITEMS[id]; return !((li && !it.lite) || (it.adminOnly && !isAdmin)); }
+  function homeCard(id) {
+    var it = HOME_ITEMS[id], b = el("button", "cardbtn"); b.type = "button"; b.setAttribute("data-card", id); b.insertAdjacentHTML("beforeend", icon(it.icon));
+    var t2 = el("span", "ctext"); t2.appendChild(el("span", "ct", T(it.t))); t2.appendChild(el("span", "cd", T(it.d))); b.appendChild(t2);
+    b.addEventListener("click", it.go); return b;
+  }
   function paintHomeMenu() {
     var li = S.edition === "lite", box = $("homeCards"); clear(box);
     HOME_GROUPS.forEach(function (g) {
       var ids = g.items.filter(function (id) { return homeItemOK(id, li); }); if (!ids.length) return;
-      var sec = el("section", "hgroup" + (g.box ? " box" : "")); sec.setAttribute("data-group", g.id);
+      var sec = el("section", "hgroup" + (g.box ? " box" : "") + (g.cols === 3 ? " cols3" : "")); sec.setAttribute("data-group", g.id);
       if (g.box) {                                                          // all Quiz Builder tools in one box; its heading opens the Builder
         var head = el("button", "boxhead"); head.type = "button"; head.setAttribute("data-card", g.head); head.insertAdjacentHTML("beforeend", icon(g.icon));
         var tx = el("span", "ctext"); tx.appendChild(el("span", "ct", T(g.title))); tx.appendChild(el("span", "cd", T(g.desc))); head.appendChild(tx);
         head.addEventListener("click", g.headGo); sec.appendChild(head);
-        ids.forEach(function (id) {
-          var it = HOME_ITEMS[id], r = el("button", "hrow"); r.type = "button"; r.setAttribute("data-card", id); r.insertAdjacentHTML("beforeend", icon(it.icon));
-          r.appendChild(el("span", "rt", T(it.t))); r.appendChild(el("span", "cd", T(it.d))); r.addEventListener("click", it.go); sec.appendChild(r);
-        });
+        var bgrid = el("div", "cards");
+        ids.forEach(function (id) { bgrid.appendChild(homeCard(id)); });
+        sec.appendChild(bgrid);
       } else {
         sec.appendChild(el("h3", "gtitle", T(g.title)));
         var grid = el("div", "cards");
-        ids.forEach(function (id) {
-          var it = HOME_ITEMS[id], b = el("button", "cardbtn"); b.type = "button"; b.setAttribute("data-card", id); b.insertAdjacentHTML("beforeend", icon(it.icon));
-          var t2 = el("span", "ctext"); t2.appendChild(el("span", "ct", T(it.t))); t2.appendChild(el("span", "cd", T(it.d))); b.appendChild(t2);
-          b.addEventListener("click", it.go); grid.appendChild(b);
-        });
+        ids.forEach(function (id) { grid.appendChild(homeCard(id)); });
         sec.appendChild(grid);
       }
       box.appendChild(sec);
@@ -159,7 +165,7 @@
     });
     c3.appendChild(tiles); grid.appendChild(c3); box.appendChild(grid);
     /* getting started: until every step is done */
-    var steps = [["ck1", !!lsGet("qms.demoDone", false), function () { runDemo(); }], ["ck2", bank.length > 0 || kbMeta.length > 0, function () { openBuilder("panelBank"); }],
+    var steps = [["ck1", !!lsGet("qms.demoDone", false), function () { runDemo(); }], ["ck2", bankChoices().some(function (b) { return b.kind !== "builtin"; }) || kbMeta.length > 0, function () { openBuilder("panelBank"); }],
                  ["ck3", hist.length > 0, function () { goSetup(); }], ["ck4", (st.pdfs || 0) > 0 || !!lsGet("qms.csvDone", false), function () { openResults(); }]];
     if (steps.some(function (s) { return !s[1]; })) {
       var ck = el("div", "checklist"); ck.appendChild(el("b", null, T("ckTitle")));
@@ -192,8 +198,14 @@
     return parts.join(" ");
   }
   function showVerse(text, ref, src) { $("votdText").textContent = text; $("votdRef").textContent = ref; $("votdSrc").textContent = src ? " - " + src : ""; $("votdBox").classList.toggle("rtl", /[\u0590-\u08FF]/.test(text)); }
+  function paintVerseArt(theme) {                                   // the picture that goes with the verse (the owner can supply own images in "verseImages")
+    var box = $("votdArt"), own = S.verseImages && S.verseImages[theme];
+    box.innerHTML = own ? '<img alt="" src="' + String(own).replace(/"/g, "&quot;") + '">' : verseArt(theme);
+    box.setAttribute("aria-label", VERSE_THEME_NAMES[theme] || "");
+  }
   function paintVerse() {
     var v = VERSE_OF_THE_DAY[votdIndex()], ref = v[0] + " " + v[1] + ":" + v[2] + (v[3] > v[2] ? "-" + v[3] : "");
+    paintVerseArt(v[5] || "sunrise");
     showVerse("\u201C" + v[4] + "\u201D", ref, VERSE_OF_THE_DAY_SOURCE);
     if (!kbMeta.some(function (m) { return m.lang === ui; })) return;                          // a Bible text in the interface language: show the verse from it
     var idx = votdIndex(), key = ui + "|" + idx, code = codeOfEnglish(v[0]), meta = kbMeta.filter(function (m) { return m.lang === ui; })[0];
@@ -272,7 +284,7 @@
     $("lLang").addEventListener("change", function () { lite.langPick = $("lLang").value; $("lOtherWrap").hidden = lite.langPick !== "other"; liteAvail(); });
     $("lOther").addEventListener("input", liteAvail); $("lPart").addEventListener("change", liteAvail);
     Array.prototype.forEach.call(document.querySelectorAll(".mode[data-lmode]"), function (b) { b.addEventListener("click", function () { lite.mode = b.getAttribute("data-lmode"); paintLite(); }); });
-    $("bSetupBtn").addEventListener("click", goSetup); $("resHome").addEventListener("click", goHomePage); $("anHome").addEventListener("click", goHomePage); $("resAnalytics").addEventListener("click", openAnalytics);
+    $("bSetupBtn").addEventListener("click", goSetup); $("resHome").addEventListener("click", goHomePage); $("anHome").addEventListener("click", goHomePage); $("resAnalytics").addEventListener("click", openAnalytics); $("anPdf").addEventListener("click", exportAnalytics);
     $("liteStart").addEventListener("click", liteStart); $("liteHome").addEventListener("click", function () { if (S.edition === "basic") showWelcome(); else goHomePage(); });
     $("wGo").addEventListener("click", welcomeGo); $("wName").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); welcomeGo(); } });
     $("wLang").addEventListener("change", function () { setUi($("wLang").value); });

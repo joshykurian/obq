@@ -130,8 +130,10 @@
     if (idb) return Promise.resolve(idb);
     return new Promise(function (res, rej) {
       if (!window.indexedDB) { rej(new Error("no indexedDB")); return; }
-      var rq = indexedDB.open("obq", 1);
-      rq.onupgradeneeded = function () { rq.result.createObjectStore("kb", { keyPath: "id" }); rq.result.createObjectStore("meta", { keyPath: "id" }); };
+      var rq = indexedDB.open("obq", 2);
+      rq.onupgradeneeded = function () {
+        var d = rq.result; ["kb", "meta", "banks", "trcache"].forEach(function (n) { if (!d.objectStoreNames.contains(n)) d.createObjectStore(n, { keyPath: n === "trcache" ? "k" : "id" }); });          // kb, meta: Bible texts. banks: the JSON question banks. trcache: translations already paid for
+      };
       rq.onsuccess = function () { idb = rq.result; res(idb); };
       rq.onerror = function () { rej(rq.error); };
     });
@@ -315,15 +317,22 @@
     var lp = pickLang("fKbLang", "fKbOther");
     if (!lp.val) { kbStatus(T("errOtherLang"), "err"); return Promise.resolve(false); }
     var name = normName($("fKbName").value) || (fs ? fs : (items[0] ? items[0].name.replace(/\.[^.]+$/, "") : "Bible"));
-    kbStatus(T("kbBusy"));
+    kbStatus(T("kbBusy")); $("kbOffer").hidden = true; $("bbOffer").hidden = true;
     return importBuffers(items, { name: name, lang: lp.val, langLabel: lp.label, fileset: fs }, function (a, b) { kbStatus(T("kbBusy") + " " + a + "/" + b); }).then(function (kb) {
       var nb = Object.keys(kb.books).length;
       if (!nb) { kbStatus(T("kbNoBooks"), "err"); return false; }
       return kbSave(kb).then(function () {
         var vc = 0; Object.keys(kb.books).forEach(function (c) { vc += kb.books[c].v.length; });
-        kbStatus(T("kbDone", { name: name, b: nb, v: vc }), "okmsg"); track("bible_text_added", { books: nb, source: fs ? "biblebrain" : "upload" }); return true;
+        kbStatus(T("kbDone", { name: name, b: nb, v: vc }), "okmsg"); kbOfferMake(kb.id, lp.label || lp.val); track("bible_text_added", { books: nb, source: fs ? "biblebrain" : "upload" }); return true;
       });
     }).catch(function (e) { kbStatus(e && /zip/i.test(e.message || "") ? T("kbNoBooks") : T("kbNoIdb"), "err"); return false; });
+  }
+  function kbOfferMake(id, label) {                                  // right after a Bible text is added: offer to put the OBQ questions into its language
+    var m = kbMeta.filter(function (x) { return x.id === id; })[0];
+    [["kbOffer", "kbOfferText", "kbOfferBtn"], ["bbOffer", "bbOfferText", "bbOfferBtn"]].forEach(function (ids) {
+      var box = $(ids[0]); if (!m) { box.hidden = true; return; }
+      $(ids[1]).textContent = T("trOfferText", { l: label }); $(ids[2]).textContent = T("trOfferBtn", { l: label }); $(ids[2]).onclick = function () { openTranslate(m); }; box.hidden = false;
+    });
   }
   function paintKb() {
     var box = $("kbList"); clear(box); clear($("kbPrev"));
@@ -336,7 +345,8 @@
       pv.addEventListener("click", function () { previewKb(m); });
       var dl = el("button", "ghost sm", T("kbDelete")); dl.type = "button";
       dl.addEventListener("click", function () { kbRemove(m.id).then(paintKb); });
-      var act = el("div", "row"); act.appendChild(pv); act.appendChild(dl); row.appendChild(act); box.appendChild(row);
+      var mk = el("button", "primary sm", T("trMake")); mk.type = "button"; mk.addEventListener("click", function () { openTranslate(m); });
+      var act = el("div", "row"); act.appendChild(mk); act.appendChild(pv); act.appendChild(dl); row.appendChild(act); box.appendChild(row);
     });
   }
   function previewKb(m) {

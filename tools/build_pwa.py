@@ -33,7 +33,7 @@ assert SRC.count("</head>") == 1 and SRC.count("</body>") == 1 and SRC.count("<h
 # folder the app lives in, so that the page and its files load from any of those addresses.
 ROUTES = ["builder/questionbank", "builder/knowledge-base", "builder/results", "builder/firebase", "builder/activity", "builder/remote",
           "results/firebase", "settings/remote", "builder", "results", "analytics", "instructions", "settings", "profile", "my-quizzes",
-          "setup", "quick-quiz", "admin", "firebase-help"]
+          "setup", "quick-quiz", "admin", "firebase-help", "about/contact", "about"]
 base_js = ("<script>(function(){var p=location.pathname;if(!/^https?:$/.test(location.protocol)||p.charAt(0)!==\"/\")return;var R=" + json.dumps(ROUTES) +
            ";var q=p.replace(/index\\.html$/,\"\").replace(/\\/+$/,\"\"),b=null,i,s;for(i=0;i<R.length;i++){s=\"/\"+R[i];if(q.length>=s.length&&q.slice(-s.length)===s){b=q.slice(0,q.length-s.length)+\"/\";break;}}"
            "if(b===null)b=p.replace(/[^\\/]*$/,\"\");window.__OBQ_BASE=b;document.write('<base href=\"'+b+'\">');})();</script>")
@@ -70,12 +70,31 @@ def icon(size, maskable=False):
 for fn, sz, m in [("icon-180.png", 180, False), ("icon-192.png", 192, False), ("icon-512.png", 512, False), ("icon-maskable-512.png", 512, True)]:
     icon(sz, m).save(os.path.join(OUT, "icons", fn))
 
+# addresses that are saved at install: the Excel reader, the sign-in libraries (only when Firebase is configured) and the fonts
+_app1 = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "app1.js"), encoding="utf-8").read(); _cfg1 = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "cfg1.js"), encoding="utf-8").read()
+pre_ext = [re.search(r'XLSX_URL = "([^"]+)"', _app1).group(1)]
+if re.search(r'firebase:\s*\{\s*apiKey:\s*"[^"]+"[^}]*projectId:\s*"[^"]+"', SRC):
+    _ver = re.search(r'firebaseSdkVersion:\s*"([^"]+)"', SRC).group(1)
+    pre_ext += ["https://www.gstatic.com/firebasejs/%s/firebase-%s-compat.js" % (_ver, n) for n in ("app", "auth", "firestore")]
+font_css = sorted(set(re.findall(r'https://fonts\.googleapis\.com/css2?[^"\'<> )]+', SRC)))
 # service worker (the version changes by itself whenever index.html changes)
 open(os.path.join(OUT, "sw.js"), "w", encoding="utf-8").write(f'''// {name} - service worker (version {ver} is derived from index.html automatically)
 const CACHE = "qms-{ver}";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/icon-180.png"];
+const PRECACHE_EXTERNAL = {json.dumps(pre_ext)};   // saved at install, so Excel upload and the sign-in library work offline from the first time
+const FONT_CSS = {json.dumps(font_css)};
+async function precacheExternal(cache) {{
+  await Promise.all(PRECACHE_EXTERNAL.map(async (u) => {{ try {{ const r = await fetch(u, {{ mode: "cors" }}); if (r.ok) await cache.put(u, r); }} catch (e) {{}} }}));
+  for (const css of FONT_CSS) {{
+    try {{
+      const r = await fetch(css, {{ mode: "cors" }}); if (!r.ok) continue; const text = await r.clone().text(); await cache.put(css, r);
+      const urls = [...text.matchAll(/url\((https:[^)]+)\)/g)].map((m) => m[1]).slice(0, 24);
+      await Promise.all(urls.map(async (u) => {{ try {{ const f = await fetch(u, {{ mode: "cors" }}); if (f.ok) await cache.put(u, f); }} catch (e) {{}} }}));
+    }} catch (e) {{}}
+  }}
+}}
 const RUNTIME_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com", "www.gstatic.com"];   // fonts, the Excel reader and the Firebase library (www.gstatic.com), kept for offline use
-self.addEventListener("install", (e) => {{ e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); }});
+self.addEventListener("install", (e) => {{ e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL).then(() => Promise.race([precacheExternal(c), new Promise((r) => setTimeout(r, 20000))]))).then(() => self.skipWaiting())); }});
 self.addEventListener("activate", (e) => {{
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 }});

@@ -50,6 +50,7 @@
         <div class="field"><label for="upCountry" data-i18n="country"></label><input type="text" id="upCountry" autocomplete="country-name" maxlength="60"></div>
         <div class="field"><label for="upUsage" data-i18n="usage"></label><select id="upUsage"></select></div>
         <div class="field"><label for="upPass" data-i18n="pass"></label><input type="password" id="upPass" autocomplete="new-password"></div>
+        <label class="check"><input type="checkbox" id="upAnalytics"><span data-i18n="consCheck"></span></label>
         <label class="check"><input type="checkbox" id="upTerms"><span><span data-i18n="termsAgree"></span> <button class="link" type="button" id="upTermsLink" data-i18n="termsRead"></button></span></label>
         <label class="check"><input type="checkbox" id="upRemember" checked><span data-i18n="rememberMe"></span></label>
         <button class="primary" type="button" id="btnUp" data-i18n="btnUp"></button>
@@ -82,6 +83,7 @@
         <div class="field"><label for="pfOrg" data-i18n="org"></label><input type="text" id="pfOrg" autocomplete="organization" maxlength="100"></div>
         <div class="field"><label for="pfCountry" data-i18n="country"></label><input type="text" id="pfCountry" autocomplete="country-name" maxlength="60"></div>
         <div class="field"><label for="pfUsage" data-i18n="usage"></label><select id="pfUsage"></select></div>
+        <label class="check"><input type="checkbox" id="pfAnalytics"><span data-i18n="consCheck"></span></label>
         <label class="check"><input type="checkbox" id="pfTerms"><span><span data-i18n="termsAgree"></span> <button class="link" type="button" id="pfTermsLink" data-i18n="termsRead"></button></span></label>
         <button class="primary" id="pfSave" type="button" data-i18n="pfSave"></button>
       </div>
@@ -111,16 +113,20 @@
           </ul>
           <p class="note" data-i18n="homeNew"></p>
           <p class="note homeoffline" id="homeOffline" hidden></p>
+          <div class="aiwarn" id="homeAiNote" role="note"><b data-i18n="aiTitle"></b> <span data-i18n="homeAiNote"></span></div>
           <div class="homeinstall" id="homeInstall" hidden><p class="note" id="homeInstallText"></p><button class="primary sm" id="homeInstallBtn" type="button" hidden data-i18n="installBtn"></button></div>
         </div>
         <div class="homemenu" id="homeCards"></div>
       </div>
       <div class="card events" id="homeEvents"></div>
       <div class="card votd" id="votdBox">
-        <h2 class="gh" data-i18n="votdTitle"></h2>
-        <blockquote id="votdText"></blockquote>
-        <div class="votdref"><b id="votdRef"></b><small id="votdSrc"></small></div>
-        <div class="row"><button class="ghost sm" id="votdNext" type="button" data-i18n="votdNext"></button></div>
+        <div class="votdart" id="votdArt" role="img"></div>
+        <div class="votdtext">
+          <h2 class="gh" data-i18n="votdTitle"></h2>
+          <blockquote id="votdText"></blockquote>
+          <div class="votdref"><b id="votdRef"></b><small id="votdSrc"></small></div>
+          <div class="row"><button class="ghost sm" id="votdNext" type="button" data-i18n="votdNext"></button></div>
+        </div>
       </div>
     </div>
   </section>
@@ -224,8 +230,10 @@
         <span class="lbl" data-i18n="source"></span>
         <label class="radio" id="srcBWrap"><input type="radio" name="src" value="builtin" id="srcB" checked><span data-i18n="srcRandom"></span></label>
         <label class="radio"><input type="radio" name="src" value="bank" id="srcU"><span><span data-i18n="srcBank"></span> <small id="bankInfo"></small></span></label>
+        <div class="field bankpickrow" id="bankPickRow" hidden><label for="fBankPick" data-i18n="bankPickLbl"></label><select id="fBankPick"></select></div>
         <label class="radio"><input type="radio" name="src" value="kb" id="srcK"><span><span data-i18n="srcKB"></span> <small id="kbInfo"></small></span></label>
         <div class="note" id="availTxt" aria-live="polite"></div>
+        <div class="aiwarn" id="setupAiNote" role="note" hidden data-i18n="setupAiNote"></div>
       </div>
 
       <label class="check" id="readWrap"><input type="checkbox" id="fRead"><span data-i18n="fRead"></span></label>
@@ -276,11 +284,15 @@
         <div class="row">
           <button class="ghost icon-btn" id="dlTpl" type="button"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg><span data-i18n="dlTpl"></span></button>
           <button class="primary" id="upBtn" type="button" data-i18n="upload"></button>
-          <input type="file" id="fileIn" accept=".xlsx,.xls,.csv" hidden>
-          <button class="ghost" id="clearBank" type="button" data-i18n="clearBank"></button>
+          <input type="file" id="fileIn" accept=".xlsx,.xls,.csv,.json" hidden>
         </div>
-        <label class="check"><input type="checkbox" id="addMode"><span data-i18n="addMode"></span></label>
+        <p class="note" data-i18n="bankJsonNote"></p>
         <div class="note" id="upMsg" aria-live="polite"></div>
+        <h3 class="gh2" data-i18n="libTitle"></h3>
+        <div class="tablewrap"><table class="bt libt" id="libTable"></table></div>
+        <div class="note" id="libNote"></div>
+        <div class="note" id="shNeed" hidden data-i18n="shNeed"></div>
+        <div class="aiwarn" role="note" data-i18n="bankAiNote"></div>
         <div id="bankStats"></div>
         <div class="tablewrap"><table class="bt" id="bankTable"></table></div>
       </div>
@@ -295,6 +307,12 @@
         </div>
         <div class="row"><button class="primary" id="kbUp" type="button" data-i18n="kbFiles"></button><input type="file" id="kbFiles" accept=".zip,.usfm,.sfm,.usx,.usfx,.xml,.txt" multiple hidden>
           <button class="ghost" id="kbBundleBtn" type="button" data-i18n="kbBundle"></button><input type="file" id="kbBundleFile" accept=".zip" hidden></div>
+        <div class="shimport" id="shImportBox">
+          <h3 class="gh2" data-i18n="imTitle"></h3>
+          <p class="note" data-i18n="imIntro"></p>
+          <div class="row"><button class="primary" id="imOpen" type="button" data-i18n="imOpen"></button></div>
+          <div class="note" id="imNeed" hidden data-i18n="shNeed"></div>
+        </div>
         <h3 class="gh2" data-i18n="bbTitle"></h3>
         <p class="note" data-i18n="bbIntro"></p>
         <p class="note bbhelp"><span data-i18n="bbMore"></span> <a href="https://biblebrain.com/" target="_blank" rel="noopener noreferrer">https://biblebrain.com/</a></p>
@@ -314,16 +332,60 @@
           <div class="field"><label for="bbLang" data-i18n="bbLangL"></label><select id="bbLang" disabled></select></div>
         </div>
         <div class="note" id="bbMsg" aria-live="polite"></div>
+        <div class="kboffer" id="bbOffer" hidden><span id="bbOfferText"></span> <button class="primary sm" id="bbOfferBtn" type="button"></button></div>
         <div class="tablewrap"><table class="bt" id="bbTable"></table></div>
         <div class="fgrid">
           <div class="field"><label for="fKbFs" data-i18n="kbFs"></label><input type="text" id="fKbFs" autocomplete="off"><small data-i18n="bbManual"></small></div>
           <div class="field"><label>&nbsp;</label><button class="ghost" id="kbDl" type="button" data-i18n="kbDl"></button></div>
         </div>
         <div class="note" id="kbMsg" aria-live="polite"></div>
+        <div class="kboffer" id="kbOffer" hidden><span id="kbOfferText"></span> <button class="primary sm" id="kbOfferBtn" type="button"></button></div>
         <div id="kbList"></div>
         <div id="kbPrev"></div>
       </div>
 
+    </div>
+  </section>
+
+  <!-- ================= ABOUT AND CONTACT ================= -->
+  <section class="screen" id="about">
+    <div class="card wide">
+      <div class="dash-head"><h1 class="ptitle" data-i18n="abTitle"></h1><button class="ghost" id="abHome" type="button" data-i18n="home"></button></div>
+      <nav class="jumpnav" aria-label="About and Contact">
+        <button class="ghost sm" type="button" data-jump="panelAbout" data-i18n="abJump"></button>
+        <button class="ghost sm" type="button" data-jump="panelContact" data-i18n="ctJump"></button>
+      </nav>
+      <div class="aiwarn" id="aboutAi" role="note"><h2 class="gh2" data-i18n="abAiTitle"></h2><p data-i18n="abAi1"></p><p data-i18n="abAi2"></p><p><b data-i18n="abAi3"></b></p></div>
+      <div class="panel2" id="panelAbout">
+        <h2 data-i18n="abWhat"></h2>
+        <p data-i18n="abIntro"></p>
+        <ul class="steps"><li data-i18n="abF1"></li><li data-i18n="abF2"></li><li data-i18n="abF3"></li><li data-i18n="abF4"></li><li data-i18n="abF5"></li></ul>
+        <h3 class="gh2" data-i18n="abPrivTitle"></h3>
+        <p data-i18n="abPrivacy"></p>
+        <p class="note" id="abVersion"></p>
+        <p class="note" id="abOperator" hidden></p>
+        <div class="row"><button class="ghost" id="abTerms" type="button" data-i18n="abTermsBtn"></button><button class="ghost" id="abHelp" type="button" data-i18n="hHelp"></button></div>
+      </div>
+      <div class="panel2" id="panelContact">
+        <h2 data-i18n="ctTitle"></h2>
+        <p class="note" data-i18n="ctIntro"></p>
+        <div class="err" id="ctOff" hidden data-i18n="ctNotReady"></div>
+        <div class="fgrid">
+          <div class="field"><label for="ctName" data-i18n="ctName"></label><input type="text" id="ctName" maxlength="80" autocomplete="name"></div>
+          <div class="field"><label for="ctEmail" data-i18n="ctEmail"></label><input type="email" id="ctEmail" readonly></div>
+          <div class="field"><label for="ctTopic" data-i18n="ctTopic"></label><select id="ctTopic"></select></div>
+        </div>
+        <div class="field"><label for="ctText" data-i18n="ctText"></label><textarea id="ctText" rows="6" maxlength="2000"></textarea><small id="ctCount"></small></div>
+        <div class="hpfield" aria-hidden="true"><label>Website<input type="text" id="ctWebsite" tabindex="-1" autocomplete="off"></label></div>
+        <p class="note" id="ctSendNoteP" data-i18n="ctSendNote"></p>
+        <div class="row"><button class="primary" id="ctCodeBtn" type="button" data-i18n="ctCodeBtn"></button></div>
+        <div id="ctCodeBox" hidden>
+          <p class="note" id="ctCodeNote" aria-live="polite"></p>
+          <div class="field"><label for="ctCode" data-i18n="ctCodeLabel"></label><input type="text" id="ctCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" pattern="[0-9]*"></div>
+          <div class="row"><button class="primary" id="ctSend" type="button" data-i18n="ctSend"></button><button class="ghost" id="ctResend" type="button" data-i18n="ctResend"></button></div>
+        </div>
+        <div class="note" id="ctMsg" aria-live="polite"></div>
+      </div>
     </div>
   </section>
 
@@ -347,7 +409,7 @@
         <h2 data-i18n="ownTitle"></h2>
         <p class="note" data-i18n="ownIntro"></p>
         <div class="note" id="ownStatus"></div>
-        <textarea id="fOwnCfg" rows="6" spellcheck="false" placeholder="const firebaseConfig = { apiKey: &quot;...&quot;, projectId: &quot;...&quot;, appId: &quot;...&quot; };"></textarea>
+        <textarea id="fOwnCfg" aria-label="Firebase configuration (firebaseConfig)" rows="6" spellcheck="false" placeholder="const firebaseConfig = { apiKey: &quot;...&quot;, projectId: &quot;...&quot;, appId: &quot;...&quot; };"></textarea>
         <div class="row">
           <button class="primary" id="ownConnect" type="button" data-i18n="ownConnect"></button>
           <button class="ghost" id="ownFileBtn" type="button" data-i18n="ownFile"></button><input type="file" id="ownFile" accept=".js,.json,.txt" hidden>
@@ -365,13 +427,27 @@
   <!-- ================= ANALYTICS DASHBOARD ================= -->
   <section class="screen" id="analytics">
     <div class="card wide">
-      <div class="dash-head"><h1 class="ptitle" data-i18n="anTitle"></h1><button class="ghost" id="anHome" type="button" data-i18n="home"></button></div>
+      <div class="dash-head"><h1 class="ptitle" data-i18n="anTitle"></h1><div class="row"><button class="primary" id="anPdf" type="button" data-i18n="anPdf"></button><button class="ghost" id="anHome" type="button" data-i18n="home"></button></div></div>
+      <div class="export-msg" id="anPdfMsg" aria-live="polite"></div>
       <div class="panel2" id="panelActivity">
         <h2 data-i18n="activity"></h2>
         <div class="stats" id="stats"></div>
         <div class="note" id="fbStatus"></div>
       </div>
 
+
+      <div class="panel2" id="panelShare">
+        <h2 data-i18n="shareTitle"></h2>
+        <p class="note" data-i18n="shareIntro"></p>
+        <div class="row"><button class="primary" id="shareBtn" type="button" data-i18n="shareBtn"></button><button class="ghost" id="shareWithdraw" type="button" hidden data-i18n="shareWithdraw"></button></div>
+        <div class="sharebox" id="sharePreview" hidden>
+          <p><b data-i18n="sharePreviewTitle"></b></p>
+          <ul class="steps" id="shareList"></ul>
+          <p class="note" data-i18n="shareNote"></p>
+          <div class="row"><button class="primary" id="shareSend" type="button" data-i18n="shareSend"></button><button class="ghost" id="shareCancel" type="button" data-i18n="shareCancel"></button></div>
+        </div>
+        <div class="note" id="shareMsg" aria-live="polite"></div>
+      </div>
     </div>
   </section>
 
@@ -420,11 +496,22 @@
         <div class="row"><button class="primary" id="setInstallBtn" type="button" hidden data-i18n="installBtn"></button></div>
         <p class="note" id="setInstallHelp"></p>
         <p class="note" id="setOfflineState"></p>
+        <p class="note" id="setOfflineExcel"></p>
         <h3 class="gh2" data-i18n="offWorksTitle"></h3>
         <ul class="steps"><li data-i18n="offWork1"></li><li data-i18n="offWork2"></li><li data-i18n="offWork3"></li><li data-i18n="offWork4"></li></ul>
         <h3 class="gh2" data-i18n="offNeedsTitle"></h3>
         <ul class="steps"><li data-i18n="offNeed1"></li><li data-i18n="offNeed2"></li><li data-i18n="offNeed3"></li><li data-i18n="offNeed4"></li></ul>
         <p class="note" data-i18n="offNote"></p>
+      </div>
+      <div class="panel2" id="setData">
+        <h2 data-i18n="mdTitle"></h2>
+        <p class="note" data-i18n="mdIntro"></p>
+        <div class="row"><button class="ghost" id="mdDownload" type="button" data-i18n="mdDownload"></button></div>
+        <h3 class="gh2" data-i18n="mdDelTitle"></h3>
+        <p class="note" data-i18n="mdDelText"></p>
+        <div class="field"><label for="mdConfirm" data-i18n="mdConfirmLabel"></label><input type="text" id="mdConfirm" autocomplete="off"></div>
+        <div class="row"><button class="ghost danger" id="mdDelete" type="button" disabled data-i18n="mdDelete"></button></div>
+        <div class="note" id="mdMsg" aria-live="polite"></div>
       </div>
       <div class="panel2">
         <h2 data-i18n="setPrivacy"></h2>
@@ -483,9 +570,12 @@
         <div class="row"><button class="ghost" id="adminRefresh" type="button" data-i18n="admRefresh"></button><button class="ghost" id="adminBack" type="button" data-i18n="home"></button></div></div>
       <p class="note" data-i18n="admIntro"></p>
       <div class="stats" id="adminStats"></div>
-      <div class="row"><button class="primary" id="admUsageCsv" type="button" data-i18n="admUsageCsv"></button><button class="ghost" id="admUsersCsv" type="button" data-i18n="admUsersCsv"></button></div>
+      <div class="row"><button class="primary" id="admUsageCsv" type="button" data-i18n="admUsageCsv"></button><button class="ghost" id="admUsersCsv" type="button" data-i18n="admUsersCsv"></button><button class="ghost" id="admSharesCsv" type="button" data-i18n="admSharesCsv"></button><button class="ghost" id="admContactCsv" type="button" data-i18n="admContactCsv"></button></div>
       <div class="note" id="adminMsg" aria-live="polite"></div>
       <div class="panel2"><h2 data-i18n="admRecent"></h2><div class="tablewrap"><table class="bt" id="admUsage"></table></div></div>
+      <div class="panel2"><h2 data-i18n="admShares"></h2><p class="note" data-i18n="admSharesNote"></p><div class="tablewrap"><table class="bt" id="admSharesT"></table></div></div>
+      <div class="panel2"><h2 data-i18n="admBanks"></h2><p class="note" data-i18n="admBanksNote"></p><div class="tablewrap"><table class="bt libt" id="admBanksT"></table></div></div>
+      <div class="panel2"><h2 data-i18n="admContact"></h2><p class="note" data-i18n="admContactNote"></p><div class="tablewrap"><table class="bt" id="admContactT"></table></div></div>
       <div class="panel2"><h2 data-i18n="admUsers"></h2><div class="tablewrap"><table class="bt" id="admUsersT"></table></div></div>
     </div>
   </section>
@@ -561,9 +651,15 @@
   <!-- ================= FINAL ================= -->
   <section class="screen end" id="end">
     <h2 id="winner"></h2>
+    <div class="endright">
     <div class="lbwrap">
       <div class="lbtitle" id="lbTitle"></div>
       <ol class="rank" id="rank"></ol>
+    </div>
+    <div class="photobox" id="photoBox" hidden>
+      <div class="photoask" id="photoAsk"><span data-i18n="photoAsk"></span><button class="ghost sm" id="photoAdd" type="button" data-i18n="photoAdd"></button><button class="link" id="photoSkip" type="button" data-i18n="photoSkip"></button></div>
+      <div class="photoshow" id="photoShow" hidden><img id="photoImg" alt=""><div class="row"><button class="ghost sm" id="photoChange" type="button" data-i18n="photoChange"></button><button class="ghost sm" id="photoRemove" type="button" data-i18n="photoRemove"></button></div></div>
+    </div>
     </div>
     <div class="take verse-card">
       <p class="verse" id="verseText"></p>
@@ -580,6 +676,125 @@
     </div>
     <div class="export-msg" id="exportMsg" aria-live="polite"></div>
   </section>
+
+  <!-- ================= QUESTIONS FROM A BIBLE TEXT ================= -->
+  <div class="modal" id="trModal" hidden role="dialog" aria-modal="true" aria-labelledby="trTitle">
+    <div class="modal-card tr-card">
+      <h2 class="gh" id="trTitle" data-i18n="trTitle"></h2>
+      <p class="note" id="trIntro"></p>
+      <div id="trForm">
+        <div class="fgrid">
+          <div class="field"><label for="trBase" data-i18n="trBase"></label><select id="trBase"></select></div>
+          <div class="field"><label for="trCode" data-i18n="trCode"></label><input type="text" id="trCode" maxlength="8" autocomplete="off"><small data-i18n="trCodeNote"></small></div>
+          <div class="field"><label for="trEngine" data-i18n="trEngine"></label><select id="trEngine"><option value="google">Google Cloud Translation</option><option value="microsoft">Microsoft Translator</option><option value="gemini" data-i18n="trOptGemini"></option><option value="chrome" data-i18n="trOptChrome"></option><option value="libre">LibreTranslate</option><option value="manual" data-i18n="trManual"></option></select></div>
+        </div>
+        <div class="fgrid">
+          <div class="field" id="trKeyWrap"><label for="trKey"></label><input type="password" id="trKey" autocomplete="off"></div>
+          <div class="field" id="trRegionWrap" hidden><label for="trRegion" data-i18n="trRegion"></label><input type="text" id="trRegion" autocomplete="off"></div>
+          <div class="field" id="trModelWrap" hidden><label for="trModel" data-i18n="trModel"></label><input type="text" id="trModel" autocomplete="off" value="gemini-flash-latest"></div>
+          <div class="field" id="trUrlWrap" hidden><label for="trUrl" data-i18n="trUrl"></label><input type="text" id="trUrl" autocomplete="off" placeholder="https://"></div>
+        </div>
+        <p class="note" id="trEngineNote"></p>
+        <label class="check"><input type="checkbox" id="trTest" checked><span data-i18n="trTest"></span></label>
+        <p class="pickinfo" id="trCover"></p>
+        <p class="note" id="trSplit"></p>
+        <p class="note" id="trCost"></p>
+        <div class="row" id="trAutoRow"><button class="primary" id="trStart" type="button" data-i18n="trStart"></button></div>
+        <div id="trManualRow" hidden>
+          <p class="note" data-i18n="trManualNote"></p>
+          <div class="row"><button class="ghost" id="trDlXl" type="button" data-i18n="trDlXl"></button><button class="primary" id="trUpXl" type="button" data-i18n="trUpXl"></button><input type="file" id="trXlFile" accept=".xlsx,.xls,.csv" hidden></div>
+        </div>
+      </div>
+      <div id="trWork" hidden><progress id="trBar" max="1" value="0"></progress><p class="note" id="trStatus"></p><div class="row"><button class="ghost" id="trCancel" type="button" data-i18n="trCancelJob"></button></div></div>
+      <div class="note" id="trResult" aria-live="polite"></div>
+      <div class="aiwarn" role="note" data-i18n="trAiNote"></div>
+      <p class="note" data-i18n="trPrivacy"></p>
+      <div class="row"><button class="ghost" id="trReview" type="button" hidden></button><button class="ghost" id="trClose" type="button" data-i18n="trClose"></button></div>
+    </div>
+  </div>
+
+  <!-- ================= CHECK TRANSLATED QUESTIONS ================= -->
+  <div class="modal" id="rvModal" hidden role="dialog" aria-modal="true" aria-labelledby="rvTitle">
+    <div class="modal-card tr-card">
+      <h2 class="gh" id="rvTitle"></h2>
+      <p class="note" id="rvInfo"></p>
+      <div class="rvlist" id="rvList"></div>
+      <div class="row"><button class="ghost sm" id="rvPrev" type="button" data-i18n="rvPrev"></button><span class="note" id="rvPage"></span><button class="ghost sm" id="rvNext" type="button" data-i18n="rvNext"></button></div>
+      <div class="note" id="rvMsg" aria-live="polite"></div>
+      <div class="row"><button class="primary" id="rvSave" type="button" data-i18n="rvSave"></button><button class="ghost" id="rvClose" type="button" data-i18n="trClose"></button></div>
+    </div>
+  </div>
+
+  <!-- ================= ANALYTICS CHOICE ================= -->
+  <div class="modal" id="anModal" hidden role="dialog" aria-modal="true" aria-labelledby="consTitle">
+    <div class="modal-card">
+      <h2 class="gh" id="consTitle" data-i18n="consTitle"></h2>
+      <p data-i18n="consText"></p>
+      <div class="row"><button class="primary" id="anAllow" type="button" data-i18n="consAllow"></button><button class="ghost" id="anDeny" type="button" data-i18n="consDeny"></button></div>
+    </div>
+  </div>
+
+  <!-- ================= WINNERS' PHOTO POP-UP ================= -->
+  <div class="modal" id="phModal" hidden role="dialog" aria-modal="true" aria-labelledby="phTitle">
+    <div class="modal-card ph-card">
+      <h2 class="gh" id="phTitle" data-i18n="phTitle"></h2>
+      <div id="phChoose">
+        <p class="note" data-i18n="phIntro"></p>
+        <div class="phopts">
+          <button class="phopt" id="phShot" type="button"><span class="phic" data-pic="monitor"></span><span class="pht"><b data-i18n="phShotT"></b><small data-i18n="phShotD"></small></span></button>
+          <button class="phopt" id="phCam" type="button"><span class="phic" data-pic="camera"></span><span class="pht"><b data-i18n="phCamT"></b><small data-i18n="phCamD"></small></span></button>
+          <button class="phopt" id="phFile" type="button"><span class="phic" data-pic="image"></span><span class="pht"><b data-i18n="phFileT"></b><small data-i18n="phFileD"></small></span></button>
+        </div>
+        <button class="ghost sm" id="phCamApp" type="button" hidden data-i18n="phCamApp"></button>
+        <p class="note" data-i18n="phPrivacy"></p>
+      </div>
+      <div id="phLive" hidden>
+        <p class="note" id="phLiveTitle"></p>
+        <div class="phvideo"><video id="phVideo" playsinline muted autoplay></video></div>
+        <div class="row"><button class="primary" id="phSnap" type="button"></button><button class="ghost" id="phFlip" type="button" data-i18n="phFlip"></button><button class="ghost" id="phLiveBack" type="button" data-i18n="phBack"></button></div>
+      </div>
+      <div id="phPreviewView" hidden>
+        <div class="phvideo"><img id="phPrevImg" alt=""></div>
+        <div class="row"><button class="primary" id="phUse" type="button" data-i18n="phUse"></button><button class="ghost" id="phAgain" type="button" data-i18n="phAgain"></button></div>
+      </div>
+      <div class="err" id="phMsg" role="alert"></div>
+      <div class="row"><button class="ghost" id="phCancel" type="button" data-i18n="phCancel"></button></div>
+      <input type="file" id="phInput" accept="image/*" hidden>
+      <input type="file" id="phCapInput" accept="image/*" capture="environment" hidden>
+    </div>
+  </div>
+
+  <!-- ================= SHARE A QUESTION BANK ================= -->
+  <div class="modal" id="shModal" hidden role="dialog" aria-modal="true" aria-labelledby="shTitle">
+    <div class="modal-card">
+      <h2 class="gh" id="shTitle"></h2>
+      <p class="note" id="shInfo"></p>
+      <div class="fgrid">
+        <div class="field"><label for="shIso" data-i18n="shIso"></label><input type="text" id="shIso" maxlength="12" autocomplete="off"><small data-i18n="shIsoNote"></small></div>
+        <div class="field"><label for="shNotes" data-i18n="shNotes"></label><input type="text" id="shNotes" maxlength="300" autocomplete="off"></div>
+      </div>
+      <label class="check" id="shVerseWrap" hidden><input type="checkbox" id="shVerse"><span data-i18n="shVerse"></span></label>
+      <label class="check" id="shCheckWrap" hidden><input type="checkbox" id="shCheck"><span id="shCheckTxt"></span></label>
+      <p class="note" data-i18n="shWhat"></p>
+      <label class="check"><input type="checkbox" id="shConsent"><span data-i18n="shConsent"></span></label>
+      <div class="err" id="shMsg" role="alert"></div>
+      <div class="row"><button class="primary" id="shSend" type="button" data-i18n="shSend"></button><button class="ghost" id="shCancel" type="button" data-i18n="shCancel"></button></div>
+    </div>
+  </div>
+
+  <!-- ================= IMPORT AN ADDITIONAL QUESTION BANK ================= -->
+  <div class="modal" id="imModal" hidden role="dialog" aria-modal="true" aria-labelledby="imTitle2">
+    <div class="modal-card im-card">
+      <h2 class="gh" id="imTitle2" data-i18n="imModalTitle"></h2>
+      <div class="fgrid">
+        <div class="field"><label for="imLang" data-i18n="imLangLabel"></label><select id="imLang"></select></div>
+        <div class="field"><label for="imFind" data-i18n="imFind"></label><input type="text" id="imFind" autocomplete="off"></div>
+      </div>
+      <div class="note" id="imMsg" aria-live="polite"></div>
+      <div class="tablewrap"><table class="bt libt" id="imTable"></table></div>
+      <div class="row"><button class="ghost" id="imClose" type="button" data-i18n="imClose"></button></div>
+    </div>
+  </div>
 
   <!-- ================= TERMS AND CONDITIONS POP-UP ================= -->
   <div class="modal" id="termsModal" hidden role="dialog" aria-modal="true" aria-labelledby="termsTitle">

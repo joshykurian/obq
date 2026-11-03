@@ -1,0 +1,1 @@
+window.XLSX={read:function(){return {SheetNames:['Questions'],Sheets:{Questions:1}}},utils:{sheet_to_json:function(){return window.__ROWS},book_new:function(){return {}},book_append_sheet:function(wb,ws,n){wb[n]=ws},aoa_to_sheet:function(a){return {aoa:a}}},write:function(wb){window.__xlOut=wb.Questions.aoa;return new Uint8Array([80,75,3,4])}};

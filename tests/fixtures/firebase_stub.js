@@ -1,0 +1,23 @@
+(function(){
+var DB=window.__DB={}, LOG=window.__calls=[]; window.__deny=false;
+function put(path,data,merge){var cur=DB[path],out={};Object.keys(data).forEach(function(k){var v=data[k];if(v&&v.__sv==='ts')v={_t:new Date().toISOString()};else if(v&&v.__sv==='inc')v=((cur&&cur[k])||0)+v.n;out[k]=v});DB[path]=merge?Object.assign({},cur||{},out):out}
+function revive(o){var r={};Object.keys(o).forEach(function(k){var v=o[k];if(v&&typeof v==='object'&&v._t){var d=new Date(v._t);r[k]={toDate:function(){return d},_t:v._t}}else r[k]=v});return r}
+function deny(path){return window.__deny && /^sharedBanks/.test(path)}
+function ruleDeny(path){ if(path.indexOf('contactMessages/')!==0) return false; if(DB[path]) return true; var at=(window.__authTime||Math.floor(Date.now()/1000)); if(at<Date.now()/1000-600) return true; var parts=path.split('/')[1].split('_'); var day=new Date().toISOString().slice(0,10).replace(/-/g,''); return parts.length!==3||parts[1]!==day||['1','2','3'].indexOf(parts[2])<0; }
+function docRef(path){var id=path.split('/').pop();return{id:id,
+ get:function(){if(deny(path))return Promise.reject({code:'permission-denied'});var d=DB[path];return Promise.resolve({exists:!!d,id:id,data:function(){return revive(JSON.parse(JSON.stringify(d||{})))}})},
+ set:function(d){if(deny(path)||ruleDeny(path))return Promise.reject({code:'permission-denied'});LOG.push('set '+path);put(path,d,false);return Promise.resolve()},
+ update:function(d){if(deny(path))return Promise.reject({code:'permission-denied'});LOG.push('update '+path+' '+Object.keys(d).join(','));if(!DB[path])return Promise.reject({code:'not-found'});put(path,d,true);return Promise.resolve()},
+ delete:function(){if(deny(path))return Promise.reject({code:'permission-denied'});LOG.push('delete '+path);delete DB[path];return Promise.resolve()},
+ collection:function(n){return colRef(path+'/'+n)}}}
+function colRef(path){var filters=[],lim=1e9,q={doc:function(id){return docRef(path+'/'+id)},add:function(d){var id='a'+Math.random().toString(36).slice(2,8);put(path+'/'+id,d,false);LOG.push('add '+path);return Promise.resolve({id:id})},
+ where:function(f,op,v){filters.push([f,op,v]);return q},orderBy:function(){return q},limit:function(n){lim=n;return q},
+ get:function(){if(deny(path))return Promise.reject({code:'permission-denied'});var pre=path+'/';var docs=Object.keys(DB).filter(function(k){return k.indexOf(pre)===0&&k.slice(pre.length).indexOf('/')<0}).map(function(k){return{id:k.slice(pre.length),exists:true,data:function(){return revive(JSON.parse(JSON.stringify(DB[k])))}}});filters.forEach(function(f){docs=docs.filter(function(d){return d.data()[f[0]]===f[2]})});return Promise.resolve({docs:docs.slice(0,lim)})}};return q}
+var db={collection:function(n){return colRef(n)}};var fs=function(){return db};fs.FieldValue={serverTimestamp:function(){return{__sv:'ts'}},increment:function(n){return{__sv:'inc',n:n}}};
+var USERS={'ann@e.org':'U1','ben@e.org':'U2','root@e.org':'U9'}, NAMES={U1:'Ann Kurian',U2:'Ben Thomas',U9:'Root Admin'}, ORGS={U1:'Youth Ministry',U2:'Church B',U9:'OBQ'};
+Object.keys(USERS).forEach(function(e){var u=USERS[e];DB['quizMasters/'+u]={name:NAMES[u],email:e,org:ORGS[u],country:'India',usage:'church',consent:true,terms:'2026-11',createdAt:{_t:'2026-10-01T00:00:00.000Z'}}});DB['admins/U9']={ok:1};
+var cur=null;
+function auth(){return{get currentUser(){return cur},isSignInWithEmailLink:function(){return false},sendSignInLinkToEmail:function(e,st){window.__linkSent=window.__linkSent||[];window.__linkSent.push([e,st]);return Promise.resolve()},
+ signInWithEmailAndPassword:function(e,p){cur={uid:USERS[e],email:e,emailVerified:true,getIdTokenResult:function(){return Promise.resolve({claims:{auth_time:(window.__authTime||Math.floor(Date.now()/1000))}})},displayName:NAMES[USERS[e]],updateProfile:function(){return Promise.resolve()},delete:function(){if(window.__recentLogin)return Promise.reject({code:'auth/requires-recent-login'});window.__authDeleted=(window.__authDeleted||0)+1;return Promise.resolve()}};return Promise.resolve({user:cur})},
+ signOut:function(){cur=null;return Promise.resolve()},onAuthStateChanged:function(cb){setTimeout(function(){cb(null)},0)}}}
+window.firebase={app:function(){return{functions:function(region){return{httpsCallable:function(name){return function(data){try{var r=window.__fn?window.__fn(name,data,region):null;return Promise.resolve(r).then(function(d){return{data:d}})}catch(e){return Promise.reject(e)}}}}}}},apps:[],initializeApp:function(){return{}},firestore:fs,auth:auth,analytics:function(){return{logEvent:function(){},setAnalyticsCollectionEnabled:function(){},setUserId:function(){}}}};})();

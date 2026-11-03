@@ -4,6 +4,8 @@
    Full bank, ENCRYPTED:  python3 tools/import_bank.py private/YOUR-BANK.xlsx --encrypt --key-file private/bank.key
         -> src/cfg3_bank.enc.json (safe to publish: it cannot be read without the key; the build needs the key, see README)
    Another bank for local tests only:  python3 tools/import_bank.py YOUR-BANK.xlsx --out private/cfg3_bank.js   (the build prefers private/cfg3_bank.js)
+   A plain JSON bank file (the same format the app uses for its question banks), for your own use or to upload in the app:
+        python3 tools/import_bank.py private/YOUR-BANK.xlsx --json-out private/obq-core.json   (keep it private: the published bank is encrypted)
    Same rules as the in-app Excel import; rows with a problem are skipped and listed."""
 import collections, json, os, re, sys
 from openpyxl import load_workbook
@@ -98,6 +100,18 @@ for ri, r in enumerate(rows[1:], start=2):
     # pad Pts/Secs positions when only Secs is present
     out.append(row)
 
+if "--json-out" in sys.argv:
+    def to_q(r):
+        r = list(r) + [None] * (12 - len(r)); cat = {"M": "mc", "C": "clue", "P": "multi", "W": "oneword"}.get(r[1], "one")
+        q = {"lang": "en", "book": r[0], "cat": cat, "level": {"T": "trivia", "D": "difficult"}.get(r[8] or "", ""), "q": r[2], "a": r[3], "ref": r[4] or "", "opts": r[5] or None, "clues": r[6] or [], "info": r[7] or "",
+             "intro": "", "parts": r[9] or None, "pts": r[10] or 0, "secs": r[11] or 0}
+        if cat == "multi": q["intro"] = r[2]; q["q"] = ""
+        if cat == "mc": q["correct"] = q["opts"].index(q["a"])
+        return q
+    import datetime
+    jp = sys.argv[sys.argv.index("--json-out") + 1]; now = datetime.datetime.utcnow().isoformat() + "Z"
+    doc = {"format": "obq-bank", "version": 1, "bid": "core", "name": "OBQ questions (English)", "lang": "en", "created": now, "updated": now, "source": {"type": "excel", "file": os.path.basename(SRC)}, "count": len(out), "questions": [to_q(r) for r in out]}
+    json.dump(doc, open(jp, "w", encoding="utf-8"), ensure_ascii=False, indent=1); print("JSON bank written: %s (%d questions)" % (jp, len(out)))
 if "--encrypt" in sys.argv:
     import base64, hashlib, zlib
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM

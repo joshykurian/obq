@@ -1,5 +1,79 @@
 # Changelog
 
+## v1.10.0 - accuracy notices, privacy for the EU and UK, a safer contact form, checks in the repository
+
+### Added
+- **Notices about AI-generated content and accuracy:** in the Terms (new section 5), the About page, a new FAQ in the Quiz Master instructions, on Home, on the set-up page when AI-made or shared questions are chosen, in the Generate window, on the Question Bank panel and in the library rows. They say that content in languages other than English, the interface translations and generated banks were made with AI tools, must be checked and corrected before use with a public audience, and that the **theological accuracy of each question has not been checked: a Bible scholar should review a bank before wide release**.
+- **Terms for the EU, UK and Switzerland** (sections 7 and 8, Terms version 2026-12): controller, purposes and legal bases, recipients, transfers, retention, rights, complaints, children, cookies and storage.
+- **Usage analytics are opt-in:** a separate unticked box at sign-up, a one-time question for existing accounts (an older bundled agreement is switched off), and the switch in Settings.
+- **Settings, Your data:** download everything the app holds for the account (device and cloud) and delete the account with its cloud data.
+- **Contact form with email confirmation, on the free Spark plan (no server):** `contactProvider: "firebase"`. The person presses **Email me a confirmation link**; Firebase emails a one-time sign-in link to the address of the account (never to an address typed in the form); opening it signs them in again and brings them back to the form, which restores the message. The database rules then accept the message only if the sign-in is less than 10 minutes old, the email is the account's, and fewer than 3 messages were sent that day (the document id is user + day + 1..3). The messages are read in **Admin** (no email goes to the team on this plan). **Optional, Blaze plan only:** `contactProvider: "functions"` uses the Firebase Functions in `functions/` for a typed six-digit code and an email to the team.
+- **Limits against abuse in the database rules:** at most 10 shared banks per Quiz Master (4 chunks each), 400 usage records per Quiz Master, and the contact message rule above. Optional **App Check** (`appCheckSiteKey` in the Firebase settings).
+- **Translations:** 582 more interface texts in all 10 languages: every text of 12 words or fewer and all texts of the core screens (quiz set-up, running a quiz, final page, Home, Settings, sign-in, Quiz Builder, question banks, Bible Knowledge Base, Bible Brain, sharing, Admin, About, offline notes). **80% of the 917 interface texts are translated (738); the 179 longer help paragraphs are still English.** They were written with AI tools and need a native reader. `tools/i18n_report.js`, `tools/i18n_export.py --tier all` lists what is left.
+- **Checks in the repository** (`tests/`, `functions/test/`, GitHub Action): build, version, translations (the number of translated texts cannot fall), accessibility, offline, banks, translation, sharing, contact, privacy, notices, server functions, rules. The site is published only when they pass. See `CONTRIBUTING.md`.
+- **Modules** (`src/modules/`, `tools/check_modules.js`, `tools/modularize.js`): new code and the files for art, photo, sharing, translation and **question banks** are modules with declared dependencies; the number of names in the shared scope can only go down (525 names, 3,476 lines are left in 10 older files).
+
+### Fixed
+- **Keyboard focus stays inside pop-ups**, and returns to what opened them.
+- **Offline:** the Excel reader, the sign-in libraries and the fonts are saved when the app is installed; Settings shows the state; a clear message when the Excel reader cannot load.
+- The Firebase config text box had no label for screen readers.
+
+### Changed
+- Sharing: the id of a shared bank is the user id plus a place (`_s1` to `_s10`) and a `rev` code; the database rules in `private/firestore.rules` must be published again.
+- Usage records are written into a ring of 400 per user.
+- The contact form no longer uses Web3Forms or Formspree (removed); messages are stored in your Firebase project and shown in Admin.
+- The version number is now 1.10.0.
+
+## v1.9.0 - share question banks, free translation options
+
+### Added
+- **Share question banks** with other Quiz Masters (online accounts): **Share** on each bank (ISO code, note, confirmation; Bible verse text and unchecked questions are left out unless ticked), **Update shared copy**, **Stop sharing**. In the Bible Knowledge Base, **Import Additional Question Bank** lists the shared banks with language and ISO code, filter and search, and downloads one into the person's own offline banks. A bank taken from the server is not shared again. Admin: **Shared question banks** (hide, show, delete). New Firestore rules for `sharedBanks` (publish the updated `firestore.rules`); the Terms describe it.
+- **Free translation options:** **Chrome or Edge on this computer** (no key, nothing leaves the computer) and **Google Gemini** (free AI Studio key); wrong item counts from an AI model are retried.
+- The Generate window shows the **Old Testament and New Testament** counts. A Bible Brain download shows **Generate questions in <language> now** right under the list.
+- The build now stops if two functions have the same name.
+
+### Changed
+- **Make questions** is now **Generate questions**. The Google note says the first 500,000 characters a month are free.
+- The built-in bank is now built from **v6** (the same 1,390 questions as v5, plus a Statistics sheet).
+- The version number is now 1.9.0.
+
+### Fixed
+- A name clash that stopped the analytics-sharing button working was found and removed before release.
+
+## v1.8.0 - JSON question banks, questions in the language of a Bible text
+
+### Added
+- **Question bank library:** every bank is a JSON file kept in the app (IndexedDB, copied to the account when signed in). An Excel upload becomes a new JSON bank; JSON banks can be uploaded, downloaded (JSON or Excel), previewed, renamed, deleted and chosen in the quiz set-up (My question banks, then the bank). The built-in OBQ questions and the Starter set are JSON banks (read only). Saved set-ups remember the bank.
+- **Make questions** (Bible Knowledge Base): the OBQ questions become a question bank in the language of an uploaded Bible text: references are looked up in that Bible, text is translated (Google Cloud Translation, Microsoft Translator, LibreTranslate with the Quiz Master's own key, or a person through Excel), the reference gets the Bible's book name, More to know is the actual verse text, and answers use the Bible's own wording where they can be matched. Test run, cost estimate, a translation cache that lets a stopped run continue, and a Review window (tap the words of the verse to use them as the answer).
+- `tools/import_bank.py --json-out` writes a plain JSON bank file.
+
+- **Offer after adding a Bible text:** right after a Bible text is uploaded or downloaded from Bible Brain, a button offers **Make questions in <language> now**. The full verse is kept in a translated bank only for the questions that need a check (smaller banks).
+- The version number is now 1.8.0.
+
+### Changed
+- The Question Bank panel no longer has "Add to my existing bank" or "Delete my bank": each upload is its own bank (an earlier single bank stays as "My question bank (earlier upload)").
+- The Terms mention the translation feature.
+
+## v1.7.0 - About and Contact, winners' photo, Analytics report
+
+### Added
+- **About and Contact** page (`/about`, `/about/contact`) with a contact form that sends an email through a message service (Web3Forms, Formspree) or keeps the message in your Firebase project (listed in Admin, with a CSV download). The receiving address is never in the app. Spam checks inside the app: a question the person must answer, a hidden field, a minimum time, a limit of 3 messages an hour and 1 a minute, and length and link limits. Terms updated.
+- **Winners' photo (optional)** on the final page: take a screenshot (online meetings), open the camera (front or back, with permission) or upload a photo from the gallery or computer; preview, then it is shown on the final page and added to the PDF report. Never saved or sent; forgotten when the next quiz ends.
+- **Analytics Dashboard:** **Using OBQ since** and **Days using OBQ**, **Saved quiz set-ups**, and **Export to PDF** (an Analytics Report with the totals, languages and recent quizzes).
+
+### Changed
+- "Quizzes run" is now **Quizzes set up** (it counts every quiz that was set up and started).
+- New Firestore rule for `contactMessages` (republish `firestore.rules`).
+
+## v1.6.0 - verse pictures, share analytics, tidier Home
+
+### Added
+- **Verse of the Day pictures:** each verse is shown with an original vector illustration chosen for its theme (14 scenes, offline, no licences). Optional own images through `verseImages`.
+- **Share my analytics with the developers (optional):** on the Analytics Dashboard, with a preview of exactly what is sent, **Send to the developers**, and **Withdraw**. Stored as one snapshot per Quiz Master in `analyticsShares/{user id}`; admins see them in **Admin, Shared analytics** with a CSV download. New Firestore rule (publish the updated `firestore.rules`). The Terms (version 2026-11) describe it.
+
+### Changed
+- **Home:** the items of the Quiz Builder and Quiz Results boxes are cards in two columns, like Run a quiz; **Account and help** has three columns (two or one on narrower screens).
+
 ## v1.5.0 - left sidebar, Quiz Results group
 
 ### Added

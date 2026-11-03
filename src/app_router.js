@@ -25,6 +25,8 @@
     "builder": function () { openBuilder(""); },
     "builder/questionbank": function () { openBuilder("panelBank"); },
     "builder/knowledge-base": function () { openBuilder("panelKb"); },
+    "about": function () { openAbout(); },
+    "about/contact": function () { openAbout("panelContact"); },
     "firebase-help": function () { openOwnGuide("results"); }
   };
   Object.keys(ROUTE_ALIAS).forEach(function (old) { ROUTE_TABLE[old] = ROUTE_TABLE[ROUTE_ALIAS[old]]; });
@@ -76,7 +78,7 @@
     });
   }
   /* ---------- left sidebar: boxes with icons for quick navigation on the inner pages (not on Home, not in a quiz) ---------- */
-  var SB_SCREENS = { lite: 1, setup: 1, dashboard: 1, resultsPage: 1, analytics: 1, settings: 1, qmguide: 1, ownguide: 1, admin: 1 };
+  var SB_SCREENS = { lite: 1, setup: 1, dashboard: 1, resultsPage: 1, analytics: 1, settings: 1, qmguide: 1, ownguide: 1, about: 1, admin: 1 };
   var SB_GROUPS = [
     { title: "", items: [{ id: "home", icon: "house", t: "home", route: "", lite: true, go: function () { goHomePage(); } }] },
     { title: "hGroupRun", items: [
@@ -95,10 +97,11 @@
       { id: "analytics", icon: "pulse", t: "hAnalytics", route: "analytics", go: function () { openAnalytics(); } },
       { id: "settings", icon: "gear", t: "hSettings", route: "settings", lite: true, go: function () { openSettings(); } },
       { id: "help", icon: "help", t: "hHelp", route: "instructions", lite: true, go: function () { openQmGuide(); } },
+      { id: "about", icon: "info", t: "hAbout", route: "about", lite: true, go: function () { openAbout(); } },
       { id: "admin", icon: "shield", t: "hAdmin", route: "admin", adminOnly: true, go: function () { openAdmin(); } }] }
   ];
   var SB_OF_ROUTE = { "": "home", "quick-quiz": "lite", "setup": "setup", "my-quizzes": "saved", "builder": "builder", "builder/questionbank": "bank", "builder/knowledge-base": "kb",
-                      "results": "results", "results/firebase": "firebase", "firebase-help": "firebase", "analytics": "analytics", "settings": "settings", "settings/remote": "settings", "profile": "settings", "instructions": "help", "admin": "admin" };
+                      "results": "results", "results/firebase": "firebase", "firebase-help": "firebase", "analytics": "analytics", "settings": "settings", "settings/remote": "settings", "profile": "settings", "instructions": "help", "admin": "admin", "about": "about", "about/contact": "about" };
   var sbSig = "", sbRoute = "";
   function buildSidebar() {
     var li = S.edition === "lite", sig = [ui, isAdmin, li].join("|"); if (sig === sbSig) return; sbSig = sig;

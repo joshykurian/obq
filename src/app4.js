@@ -25,9 +25,11 @@
       var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = S.logo;
     });
   }
-  function drawResultPages(list, logo) {
+  function drawResultPages(list, logo, photo) {
     var W = 1240, H = 1754, M = 90, ROW = 74, FONT = pdfFont(), C = S.colors, group = isGroup();
-    var firstTop = 1060, nextTop = 250, bottom = H - 130;
+    var photoW = 0, photoH = 0;                                          // the winners' photo, if one was added: fitted into the page width and at most 440 px high
+    if (photo && photo.width && photo.height) { var psc = Math.min((W - 2 * M) / photo.width, 440 / photo.height, 1.5); photoW = photo.width * psc; photoH = photo.height * psc; }
+    var firstTop = 1060 + (photoH ? Math.round(photoH) + 60 : 0), nextTop = 250, bottom = H - 130;
     var perFirst = Math.max(1, Math.floor((bottom - firstTop) / ROW)), perNext = Math.max(1, Math.floor((bottom - nextTop) / ROW));
     var chunks = [], i = 0, first = true;
     do { var cap = first ? perFirst : perNext; chunks.push(list.slice(i, i + cap)); i += cap; first = false; } while (i < list.length);
@@ -92,6 +94,10 @@
           text(label, M, wy, 46, 800, "#7A6A5C");
           text(fitText(winners.join(", "), W - 2 * M - labelW, 46, 800), M + labelW, wy, 46, 800, "#1B1410");
         } else text(T("noWin"), M, wy, 40, 700, "#1B1410");
+        if (photoH) {
+          var availTop = wy + 34, availBottom = firstTop - ROW - 24, py = availTop + Math.max(0, (availBottom - availTop - photoH) / 2), px = M + (W - 2 * M - photoW) / 2;
+          g.drawImage(photo, px, py, photoW, photoH); g.strokeStyle = "#E8D3BC"; g.lineWidth = 3; g.strokeRect(px, py, photoW, photoH);
+        }
         top = firstTop;
       } else {
         g.fillStyle = C.bg; g.fillRect(0, 0, W, 150);
@@ -153,6 +159,71 @@
     parts.forEach(function (p) { out.set(p, pos); pos += p.length; });
     return out;
   }
+  /* ---------- the analytics report (PDF) ---------- */
+  function drawAnalyticsPages(d, logo) {
+    var W = 1240, H = 1754, M = 90, ROW = 74, FONT = pdfFont(), C = S.colors, pages = [];
+    function ctx() {
+      var c = document.createElement("canvas"); c.width = W; c.height = H; var g = c.getContext("2d");
+      var o = { c: c, g: g };
+      o.text = function (t, x, y, size, weight, color, align) { g.font = weight + " " + size + "px " + FONT; g.fillStyle = color; g.textAlign = align || "left"; g.direction = /[\u0590-\u08FF]/.test(String(t)) ? "rtl" : "ltr"; g.fillText(t, x, y); };
+      o.width = function (t, size, weight) { g.font = weight + " " + size + "px " + FONT; return g.measureText(t).width; };
+      o.fit = function (t, maxW, size, weight) { t = String(t); if (o.width(t, size, weight) <= maxW) return t; while (t.length > 1 && o.width(t + "\u2026", size, weight) > maxW) t = t.slice(0, -1); return t + "\u2026"; };
+      o.wrap = function (t, maxW, size, weight, maxLines) {
+        var words = String(t).split(/\s+/), lines = [], cur = "";
+        words.forEach(function (w) { var tl = cur ? cur + " " + w : w; if (o.width(tl, size, weight) <= maxW || !cur) cur = tl; else { lines.push(cur); cur = w; } });
+        if (cur) lines.push(cur); if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] = o.fit(lines[maxLines - 1] + " \u2026", maxW, size, weight); } return lines;
+      };
+      g.fillStyle = "#FFFFFF"; g.fillRect(0, 0, W, H); g.textBaseline = "alphabetic"; return o;
+    }
+    var total = d.recent.length ? 2 : 1, title = T("anPdfTitle");
+    function footer(o, n) { o.text(o.fit(S.appName + " - " + title, W - 2 * M - 260, 26, 500), M, H - 60, 26, 500, "#7A6A5C"); o.text(T("page", { a: n, b: total }), W - M, H - 60, 26, 500, "#7A6A5C", "right"); }
+    // page 1: overview
+    var p1 = ctx(), g = p1.g;
+    g.fillStyle = C.bg; g.fillRect(0, 0, W, 330); g.fillStyle = C.accent; g.fillRect(0, 330, W, 10);
+    if (logo) { var lh = 110, lw = logo.width * lh / logo.height; g.drawImage(logo, W - M - lw, 40, lw, lh); }
+    p1.text(p1.fit(S.appName, W - 2 * M - 220, 32, 700), M, 90, 32, 700, C.muted);
+    p1.text(title, M, 170, 64, 800, C.accent);
+    p1.text(p1.fit([d.name, d.org, d.country].filter(Boolean).join("   |   "), W - 2 * M, 32, 700), M, 244, 32, 700, C.ink);
+    p1.text(T("anPdfGen", { date: fmtDate(todayISO()) }), M, 292, 28, 500, C.muted);
+    p1.text(T("anPdfOverview"), M, 412, 36, 800, "#1B1410");
+    var tw = (W - 2 * M - 48) / 3, th = 150;
+    d.tiles.forEach(function (t, i) {
+      var x = M + (i % 3) * (tw + 24), y = 440 + Math.floor(i / 3) * (th + 24);
+      g.fillStyle = "#FFF5EA"; g.fillRect(x, y, tw, th); g.strokeStyle = "#F0D9BF"; g.lineWidth = 2; g.strokeRect(x, y, tw, th);
+      var date = t[2] === "date", vs = date ? 40 : 54; while (date && vs > 26 && p1.width(String(t[1]), vs, 800) > tw - 40) vs -= 2;
+      p1.text(p1.fit(String(t[1]), tw - 40, vs, 800), x + 20, y + 66, vs, 800, "#1B1410");
+      p1.wrap(T(t[0]), tw - 40, 24, 500, 2).forEach(function (ln, li) { p1.text(ln, x + 20, y + 108 + li * 28, 24, 500, "#7A6A5C"); });
+    });
+    var ly = 440 + Math.ceil(d.tiles.length / 3) * (th + 24) + 46;
+    p1.text(T("anPdfLangs"), M, ly, 32, 800, "#1B1410");
+    p1.wrap(d.langs.length ? d.langs.join(", ") : "-", W - 2 * M, 28, 500, 3).forEach(function (ln, li) { p1.text(ln, M, ly + 46 + li * 38, 28, 500, "#1B1410"); });
+    p1.text(p1.fit(T("anPdfPriv"), W - 2 * M, 24, 500), M, H - 120, 24, 500, "#7A6A5C");
+    footer(p1, 1); pages.push(p1.c);
+    // page 2: the recent quizzes
+    if (d.recent.length) {
+      var p2 = ctx(), g2 = p2.g; g2.fillStyle = C.bg; g2.fillRect(0, 0, W, 150);
+      p2.text(p2.fit(title + " - " + T("anPdfRecent"), W - 2 * M, 38, 700), M, 80, 38, 700, C.accent); p2.text(fmtDate(todayISO()), M, 126, 30, 500, C.muted);
+      var top = 250; g2.fillStyle = "#FDE8D0"; g2.fillRect(M, top - ROW, W - 2 * M, ROW);
+      var cx = [M + 14, M + 238, M + 520, M + 712, M + 862];
+      [[T("colDate"), 0], [T("colQuiz"), 1], [T("colPlayers"), 2], [T("colQs"), 3], [T("colWinner"), 4]].forEach(function (h) { p2.text(h[0], cx[h[1]], top - 24, 24, 700, "#1B1410"); });
+      d.recent.slice(0, 20).forEach(function (r, k) {
+        var y = top + k * ROW; if (k % 2 === 0) { g2.fillStyle = "#FFF5EA"; g2.fillRect(M, y, W - 2 * M, ROW); } var base = y + 48;
+        p2.text(p2.fit(r.date ? fmtDate(r.date) : "", 214, 24, 500), cx[0], base, 24, 500, "#1B1410"); p2.text(p2.fit(r.event || "", 262, 28, 600), cx[1], base, 28, 600, "#1B1410");
+        p2.text(String(r.participants || 0), cx[2], base, 28, 500, "#1B1410"); p2.text(String(r.numQuestions || 0), cx[3], base, 28, 500, "#1B1410");
+        p2.text(p2.fit((r.winners || []).join(", "), W - M - cx[4] - 20, 26, 500), cx[4], base, 26, 500, "#1B1410");
+      });
+      g2.fillStyle = C.bg; g2.fillRect(M, top + Math.min(20, d.recent.length) * ROW, W - 2 * M, 3); footer(p2, 2); pages.push(p2.c);
+    }
+    return pages;
+  }
+  function exportAnalytics() {
+    var msg = $("anPdfMsg"); msg.textContent = T("pdfMaking"); var f = langInfo(ui).font;
+    var fonts = (document.fonts && document.fonts.load) ? Promise.all([document.fonts.load("700 30px " + f), document.fonts.load("400 30px " + f)]).catch(function () {}) : Promise.resolve();
+    Promise.all([fonts, loadLogo()]).then(function (res) {
+      var pages = drawAnalyticsPages({ name: (user && user.name) || "", org: (user && user.org) || "", country: (user && user.country) || "", tiles: analyticsTiles(), langs: stats().langs || [], recent: history() }, res[1]);
+      return saveFile("obq-analytics-" + todayISO() + ".pdf", makePdf(pages.map(canvasJpeg), 1240, 1754), "application/pdf");
+    }).then(function (saved) { msg.textContent = saved ? T("pdfSaved") : ""; if (saved) track("analytics_pdf", {}); }).catch(function () { msg.textContent = T("pdfFail"); });
+  }
   function pdfName() {
     var slug = String(cfg.event || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30);
     return S.pdfFilePrefix + (slug ? "-" + slug : "") + "-" + (cfg.date || todayISO()) + ".pdf";
@@ -161,8 +232,8 @@
     var msg = $("exportMsg"); msg.textContent = T("pdfMaking");
     var list = totals(), f = langInfo(ui).font;
     var fonts = (document.fonts && document.fonts.load) ? Promise.all([document.fonts.load("700 30px " + f), document.fonts.load("400 30px " + f)]).catch(function () {}) : Promise.resolve();
-    Promise.all([fonts, loadLogo()]).then(function (res) {
-      var pages = drawResultPages(list, res[1]);
+    Promise.all([fonts, loadLogo(), loadPhotoImage()]).then(function (res) {
+      var pages = drawResultPages(list, res[1], res[2]);
       return saveFile(pdfName(), makePdf(pages.map(canvasJpeg), 1240, 1754), "application/pdf");
     }).then(function (saved) {
       msg.textContent = saved ? T("pdfSaved") : "";
@@ -202,6 +273,7 @@
     window.addEventListener("online", function () { if (!$("authOffline").hidden) { hideVerify(); start(); } });       // network is back: try again by itself
   }
   function boot() {
+    initDialogs(); wireConsent(); wireMyData();                                       // keyboard focus stays inside pop-ups (src/modules/a11y.js); the analytics choice (src/modules/consent.js)
     paintBrand(); applySettings();
     var saved = lsGet("qms.ui", S.defaultUiLang);
     quizLangPick = S.defaultQuizLang; quizLang = quizLangPick; sel.numQ = S.questionCounts[0];
@@ -222,7 +294,7 @@
   function start() {
     if (routingOK && !pendingRoute) pendingRoute = currentRoute();                                 // remember the page address that was opened
     if (!S.requireLogin) {
-      user = { email: "", name: "", org: "", country: "", usage: "", consent: true }; loadBank();
+      user = { email: "", name: "", org: "", country: "", usage: "", consent: false }; loadBank();
       if (S.edition === "basic") { showWelcome(); return; }                 // the very basic version: just ask for the name
       if (pendingRoute && ROUTE_TABLE[pendingRoute]) { var r1 = pendingRoute; pendingRoute = ""; applyRoute(r1); } else goHomePage(); return;
     }

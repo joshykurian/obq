@@ -1,7 +1,7 @@
 """Builds dist/index.html (one self-contained file) from the working parts in src/.
 Run:  python3 tools/assemble.py
 """
-import base64, os, re, sys
+import base64, json, os, re, sys
 
 BASIC = "--basic" in sys.argv          # python tools/assemble.py --basic  ->  dist/obq-basic.html: the very basic version (name, quick quiz, results; no login)
 
@@ -39,13 +39,20 @@ elif os.path.exists(enc_file) and bank_key:
     print("question bank: ENCRYPTED full bank (%d questions) - key found" % enc["rows"])
 else:
     bank_src = rd("cfg3_bank.js"); print("question bank: sample bank (src/cfg3_bank.js)" + (" - encrypted bank present but no key (OBQ_BANK_KEY / private/bank.key)" if os.path.exists(enc_file) else ""))
-cfg = "\n".join([rd(n) for n in ["cfg1.js", "cfg2_en.js", "cfg2_hi_ml.js", "cfg2_or_ta.js", "cfg2_te_pa_bn.js", "cfg2_ne_ur_mr.js", "cfg2_extra.js", "cfg3.js"]] + [bank_src, rd("cfg4_verses.js")])
+TR_FILES = sorted(f for f in os.listdir(SRC) if re.match(r"cfg2_tr_.*\.js$", f))             # more translations, one file per language (src/cfg2_tr_hi.js ...)
+cfg = "\n".join([rd(n) for n in ["cfg1.js", "cfg2_en.js", "cfg2_hi_ml.js", "cfg2_or_ta.js", "cfg2_te_pa_bn.js", "cfg2_ne_ur_mr.js", "cfg2_extra.js"] + TR_FILES + ["cfg3.js"]] + [bank_src, rd("cfg4_verses.js")])
+if bank_src != rd("cfg3_bank.js"):                                  # the full bank is built in: the small sample stays available as the OBQ Starter set
+    cfg += "\n" + rd("cfg3_bank.js").replace("var STARTER_BANK", "var SAMPLE_BANK", 1)
 site_file = os.path.join(PRIV, "site.config.json")           # optional: {"operatorName": "...", "contactEmail": "...", "announcement": {"title": "...", "text": "...", "date": "2026-12-01", "linkText": "...", "linkUrl": "https://..."}}
 if os.path.exists(site_file):
     import json as _s
     site = _s.load(open(site_file, encoding="utf-8"))
     for k in ("operatorName", "contactEmail"):
         if site.get(k): cfg = re.sub(r"(%s: )\"[^\"]*\"" % k, lambda m: m.group(1) + _s.dumps(str(site[k])), cfg, count=1)
+    ct = {k: str(site[n]) for k, n in (("provider", "contactProvider"), ("region", "contactRegion")) if site.get(n)}
+    if ct:
+        full = {"provider": "", "region": "us-central1"}; full.update(ct)
+        cfg = re.sub(r"contact: \{[^{}]*\},", lambda m: "contact: " + _s.dumps(full) + ",", cfg, count=1); print("contact form: provider " + full["provider"])
     if isinstance(site.get("announcement"), dict):
         cfg = re.sub(r"announcement: \{[^{}]*\},", lambda m: "announcement: " + _s.dumps(site["announcement"], ensure_ascii=False) + ",", cfg, count=1)
     print("site details: PRIVATE (private/site.config.json)")
@@ -65,7 +72,28 @@ else:
     print("firebase config: none (local mode)")
 
 # 3. engine
-engine = "\n".join(rd(n) for n in ["app1.js", "app2.js", "app_kb.js", "app_saved.js", "app_own.js", "app_home.js", "app_settings.js", "app_router.js", "app3.js", "app4.js"])
+ENGINE_FILES = ["app1.js", "app2.js", "app_kb.js", "app_saved.js", "app_own.js", "app_home.js", "app_settings.js", "app_router.js", "app3.js", "app4.js"]
+_seen = {}
+for _n in ENGINE_FILES:                                  # two functions with the same name would silently replace each other: stop the build instead
+    for _m in re.finditer(r"^  function ([A-Za-z0-9_$]+)\(", rd(_n), re.M):
+        if _m.group(1) in _seen and _seen[_m.group(1)] != _n: sys.exit("DUPLICATE FUNCTION NAME %s in %s and %s" % (_m.group(1), _seen[_m.group(1)], _n))
+        _seen[_m.group(1)] = _n
+# modules (src/modules/*.js): each one is a function of its own, so its inner names are private; only the names it lists in "exports" are handed to the shared scope.
+# tools/check_modules.js checks that it takes nothing from the shared scope that it does not list in "uses".
+_mods, _mod_names = [], {}
+_MODDIR = os.path.join(SRC, "modules")
+for _f in sorted(os.listdir(_MODDIR)) if os.path.isdir(_MODDIR) else []:
+    if not _f.endswith(".js"): continue
+    _txt = open(os.path.join(_MODDIR, _f), encoding="utf-8").read(); _m = re.match(r"^/\*\s*@module\s+(\{.*?\})\s*\*/", _txt, re.S)
+    if not _m: sys.exit("MODULE %s: the first line must be /* @module {...} */" % _f)
+    _meta = json.loads(_m.group(1)); _body = _txt[_m.end():]
+    for _e in _meta.get("exports", []):
+        if _e in _seen or _e in _mod_names: sys.exit("DUPLICATE NAME %s: exported by module %s but already defined in %s" % (_e, _meta["name"], _seen.get(_e) or _mod_names[_e]))
+        _mod_names[_e] = "module " + _meta["name"]
+    _ret = ", ".join("%s: %s" % (e, e) for e in _meta.get("exports", []))
+    _mods.append("  var __mod_%s = (function () { \"use strict\";\n%s\n  return { %s };\n  })();\n%s" % (_meta["name"], _body, _ret, "".join("  var %s = __mod_%s.%s;\n" % (e, _meta["name"], e) for e in _meta.get("exports", []))))
+_core = [n for n in ENGINE_FILES if n != "app4.js"]
+engine = "\n".join([rd(n) for n in _core] + _mods + [rd("app4.js")])
 
 # 3b. logo (assets/) embedded as a small data URI, plus a favicon
 import io

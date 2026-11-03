@@ -98,6 +98,8 @@
     if (can && navigator.serviceWorker.getRegistration) {
       navigator.serviceWorker.getRegistration().then(function (r) { off.textContent = (r && r.active) ? T("offReady") : T("offNotReady"); }, function () { off.textContent = T("offNotReady"); });
     } else off.textContent = T("offSingle");
+    var ex = $("setOfflineExcel"); ex.textContent = "";
+    if (can && window.caches && caches.match) caches.match(XLSX_URL).then(function (h) { ex.textContent = T(h ? "offExcelReady" : "offExcelNot"); }, function () {});
   }
   function paintSettings() {
     var u = user || {};                                           // profile block: the current details
@@ -116,11 +118,11 @@
     $("setSound").checked = settings.sound !== false; $("setWake").checked = settings.wake !== false;
     var sp = $("setSpeed"); clear(sp);
     [["slow", "speedSlow"], ["normal", "speedNormal"], ["fast", "speedFast"]].forEach(function (f) { var o = el("option", null, T(f[1])); o.value = f[0]; sp.appendChild(o); }); sp.value = settings.speed;
-    $("setAnalytics").checked = !(user && user.consent === false);
+    $("setAnalytics").checked = !!(user && user.consent === true);
     $("setAnalyticsNote").textContent = fb.on ? T("setAnalyticsNote") : T("setAnalyticsLocal");
     $("setDeviceInfo").textContent = (rememberPref() && sessGet()) ? T("setRememberedOn") : T("setRememberedOff");
     $("setTermsInfo").textContent = user && user.terms ? T("setTermsInfo", { v: user.terms }) : "";
-    $("setMsg").textContent = ""; $("remoteOut").textContent = "-"; paintInstall();
+    $("setMsg").textContent = ""; $("remoteOut").textContent = "-"; paintInstall(); paintMyData();
   }
   /* saves the profile: Firestore (and the sign-in display name) when online, the local account otherwise */
   function saveProfile() {
@@ -142,7 +144,7 @@
         done();
       }, function (e) {
         if (e && e.code === "not-found") {                          // no profile record yet: create it
-          ref.set({ name: p.name, email: user.email, org: p.org, country: p.country, usage: p.usage, consent: user.consent !== false, terms: user.terms || S.termsVersion, termsAt: F.serverTimestamp(), createdAt: F.serverTimestamp(), loginCount: 0 }).then(done, fail);
+          ref.set({ name: p.name, email: user.email, org: p.org, country: p.country, usage: p.usage, consent: user.consent === true, terms: user.terms || S.termsVersion, termsAt: F.serverTimestamp(), createdAt: F.serverTimestamp(), loginCount: 0 }).then(done, fail);
         } else fail();
       });
     } else {
@@ -163,7 +165,7 @@
     $("setSound").addEventListener("change", function () { settings.sound = $("setSound").checked; saveSettings(); applySettings(); });
     $("setWake").addEventListener("change", function () { settings.wake = $("setWake").checked; saveSettings(); });
     $("setSpeed").addEventListener("change", function () { settings.speed = $("setSpeed").value; saveSettings(); speakIn(trIn(langCodeOf(ui) || "en", "begin"), ui, true); });
-    $("setAnalytics").addEventListener("change", function () { setAnalytics($("setAnalytics").checked); track("analytics_toggle", { on: $("setAnalytics").checked }); $("setMsg").textContent = $("setAnalytics").checked ? T("setAnalyticsOn") : T("setAnalyticsOff"); });
+    $("setAnalytics").addEventListener("change", function () { setAnalytics($("setAnalytics").checked); analyticsAnswered(); track("analytics_toggle", { on: $("setAnalytics").checked }); $("setMsg").textContent = $("setAnalytics").checked ? T("setAnalyticsOn") : T("setAnalyticsOff"); });
     $("setForget").addEventListener("click", function () { forgetDevice(); signOut(); });
     $("setTermsBtn").addEventListener("click", function () { openTerms({ mode: "view" }); });
     $("setReset").addEventListener("click", function () { var k; for (k in SETTINGS_DEFAULT) settings[k] = SETTINGS_DEFAULT[k]; saveSettings(); applySettings(); paintSettings(); $("setMsg").textContent = T("setResetDone"); });

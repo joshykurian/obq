@@ -85,11 +85,11 @@
   }
 
   /* ---------- screens ---------- */
-  var SCREENS = ["auth", "welcome", "home", "lite", "setup", "dashboard", "resultsPage", "analytics", "admin", "ownguide", "qmguide", "settings", "game", "end"];
+  var SCREENS = ["auth", "welcome", "home", "lite", "setup", "dashboard", "resultsPage", "analytics", "about", "admin", "ownguide", "qmguide", "settings", "game", "end"];
   function show(id) {
     SCREENS.forEach(function (s) { $(s).classList.toggle("active", s === id); });
     document.body.setAttribute("data-screen", id);
-    $("tbRight").hidden = !(user && (S.edition !== "basic") && (id === "home" || id === "lite" || id === "settings" || id === "setup" || id === "dashboard" || id === "resultsPage" || id === "analytics" || id === "admin" || id === "ownguide" || id === "qmguide"));
+    $("tbRight").hidden = !(user && (S.edition !== "basic") && (id === "home" || id === "lite" || id === "settings" || id === "setup" || id === "dashboard" || id === "resultsPage" || id === "analytics" || id === "about" || id === "admin" || id === "ownguide" || id === "qmguide"));
     paintSidebar(id); window.scrollTo(0, 0);
   }
 
@@ -104,10 +104,20 @@
     }
     return s;
   }
+  /* the day this Quiz Master started using OBQ: the earliest of the recorded first sign-in, the oldest finished quiz and the account creation date */
+  function sinceKey() { return "qms.since." + ((user && (user.uid || user.email)) || ""); }
+  function noteStartDate(p) {
+    var k = sinceKey(), cand = [lsGet(k, "")], h = [];
+    try { h = history(); } catch (e) {}
+    if (h.length && h[h.length - 1].completedAt) cand.push(h[h.length - 1].completedAt);
+    try { var ca = p && p.createdAt && (p.createdAt.toDate ? p.createdAt.toDate() : new Date(p.createdAt)); if (ca && !isNaN(ca)) cand.push(ca.toISOString()); } catch (e) {}
+    cand = cand.filter(Boolean).sort(); var v = cand.length ? cand[0] : new Date().toISOString(); if (v !== lsGet(k, "")) lsSet(k, v); return v;
+  }
+  function startDateISO() { return noteStartDate(user); }
   function addLang(l) { var s = stats(); s.langs = s.langs || []; if (l && s.langs.indexOf(l) < 0) { s.langs.push(l); lsSet("qms.stats", s); } }
   function bump(k, n) { var s = stats(); s[k] = (s[k] || 0) + (n || 1); lsSet("qms.stats", s); }
   function track(name, params) {
-    if (fb.analytics && !(user && user.consent === false)) { try { fb.analytics.logEvent(name, params || {}); } catch (e) {} }
+    if (fb.analytics && user && user.consent === true) { try { fb.analytics.logEvent(name, params || {}); } catch (e) {} }
   }
 
   /* ---------- Firebase (only when settings.firebase.apiKey is filled in) ---------- */
@@ -127,6 +137,10 @@
       return Promise.all([loadScript(base + "firebase-auth-compat.js"), loadScript(base + "firebase-firestore-compat.js")]);
     }).then(function () {
       if (!window.firebase.apps || !window.firebase.apps.length) window.firebase.initializeApp(S.firebase);
+      if (S.firebase.appCheckSiteKey) {                              // App Check (optional): the database only answers the real app
+        return loadScript(base + "firebase-app-check-compat.js").then(function () { try { window.firebase.appCheck().activate(S.firebase.appCheckSiteKey, true); } catch (e) {} }, function () {});
+      }
+    }).then(function () {
       fb.auth = window.firebase.auth(); fb.db = window.firebase.firestore(); fb.on = true;
       if (S.firebase.measurementId) {
         window["ga-disable-" + S.firebase.measurementId] = true;     // nothing is collected until a signed-in user has agreed (see onLogin)
@@ -179,7 +193,7 @@
     else { try { window.sessionStorage.setItem("qms.session", key); } catch (e) { mem["qms.session"] = key; } lsDel("qms.session"); }
   }
   function sessDel() { lsDel("qms.session"); try { window.sessionStorage.removeItem("qms.session"); } catch (e) {} }
-  function pickProfile(p) { return { name: p.name || "", email: p.email || "", org: p.org || "", country: p.country || "", usage: p.usage || "", consent: p.consent !== false, terms: p.terms || "", uid: p.uid || "" }; }
+  function pickProfile(p) { return { name: p.name || "", email: p.email || "", org: p.org || "", country: p.country || "", usage: p.usage || "", consent: p.consent === true, terms: p.terms || "", uid: p.uid || "" }; }
   /* Online accounts: keep a salted hash of the password and the profile on THIS device (only when "Remember me" is ticked), so the same email and
      password also work without internet. Firebase keeps the real account; this is only an offline key for this device. */
   function rememberDevice(p, pw, remember) {
@@ -284,7 +298,7 @@
     }).catch(openProfileForm);
   }
   function saveProfileForm() {
-    var u = fb.auth.currentUser, p = { name: normName($("pfName").value), org: normName($("pfOrg").value), country: normName($("pfCountry").value), usage: $("pfUsage").value, consent: true, terms: S.termsVersion };
+    var u = fb.auth.currentUser, p = { name: normName($("pfName").value), org: normName($("pfOrg").value), country: normName($("pfCountry").value), usage: $("pfUsage").value, consent: $("pfAnalytics").checked, terms: S.termsVersion };
     if (!u) { $("authErr").textContent = T("verifyFail"); return; }
     if (!p.name || !p.org || !p.country || !p.usage) { $("authErr").textContent = T("errFill"); return; }
     if (S.requireTerms && !$("pfTerms").checked) { $("authErr").textContent = T("errTerms"); return; }
@@ -310,11 +324,11 @@
       function (e) { st.className = "err"; st.textContent = (e && e.code === "auth/too-many-requests") ? T("verifyWait") : T("errNet"); });
   }
   function fbProfile(u) {
-    var base = { email: u.email || "", name: u.displayName || (u.email || "").split("@")[0], org: "", country: "", usage: "", consent: true, terms: "", uid: u.uid };
+    var base = { email: u.email || "", name: u.displayName || (u.email || "").split("@")[0], org: "", country: "", usage: "", consent: false, terms: "", uid: u.uid };
     var cached = (function () { var e = localUsers()[String(u.email || "").toLowerCase()]; return e && e.online ? e.profile : null; })();
     var fallback = function () { if (cached) { var c = pickProfile(cached); c.uid = u.uid; return c; } return base; };           // offline: use the copy saved on this device
     var load = fb.db.collection("quizMasters").doc(u.uid).get().then(function (d) {
-      if (d && d.exists) { var x = d.data(); base.name = x.name || base.name; base.org = x.org || ""; base.country = x.country || ""; base.usage = x.usage || ""; base.consent = x.consent !== false; base.terms = x.terms || ""; return base; }
+      if (d && d.exists) { var x = d.data(); base.name = x.name || base.name; base.org = x.org || ""; base.country = x.country || ""; base.usage = x.usage || ""; base.consent = x.consent === true; base.terms = x.terms || ""; return base; }
       return fallback();
     });
     var wait = new Promise(function (res) { setTimeout(function () { res(null); }, 6000); });
@@ -329,7 +343,7 @@
     var F = window.firebase.firestore.FieldValue, ref = fb.db.collection("quizMasters").doc(p.uid);
     return ref.get().then(function (d) {
       if (d.exists) return ref.update({ lastLoginAt: F.serverTimestamp(), loginCount: F.increment(1) });
-      return ref.set({ name: p.name || "", email: p.email, org: p.org || "", country: p.country || "", usage: p.usage || "", consent: p.consent !== false, terms: p.terms || S.termsVersion, termsAt: F.serverTimestamp(), createdAt: F.serverTimestamp(), lastLoginAt: F.serverTimestamp(), loginCount: 1 });
+      return ref.set({ name: p.name || "", email: p.email, org: p.org || "", country: p.country || "", usage: p.usage || "", consent: p.consent === true, terms: p.terms || S.termsVersion, termsAt: F.serverTimestamp(), createdAt: F.serverTimestamp(), lastLoginAt: F.serverTimestamp(), loginCount: 1 });
     }).then(function () {
       return ref.collection("logins").add({ at: F.serverTimestamp(), method: "password", uiLang: ui, agent: String(navigator.userAgent || "").slice(0, 200) });
     }).catch(function () {});
@@ -343,13 +357,13 @@
     finishLogin(p, isNew);
   }
   function finishLogin(p, isNew) {
-    user = p; cacheProfile(p); loadBank(); loadKb(); loadSetups(); fbRecordLogin(p); checkAdmin(); paintOwn();
-    if (S.firebase.measurementId) window["ga-disable-" + S.firebase.measurementId] = (p.consent === false);
-    if (fb.analytics) { try { fb.analytics.setAnalyticsCollectionEnabled(p.consent !== false); if (p.uid) fb.analytics.setUserId(p.uid); } catch (e) {} }
+    user = p; noteStartDate(p); cacheProfile(p); loadBank(); loadKb(); libLoad(); loadSetups(); fbRecordLogin(p); checkAdmin(); paintOwn();
+    if (S.firebase.measurementId) window["ga-disable-" + S.firebase.measurementId] = (p.consent !== true);
+    if (fb.analytics) { try { fb.analytics.setAnalyticsCollectionEnabled(p.consent === true); if (p.uid) fb.analytics.setUserId(p.uid); } catch (e) {} }
     track(isNew ? "sign_up" : "login", { method: fb.on ? "firebase" : "local" });
     $("uname").textContent = p.name || p.email; $("uchip").title = (p.org || "");
     $("authErr").textContent = ""; $("inPass").value = ""; $("upPass").value = "";
-    if (pendingRoute && ROUTE_TABLE[pendingRoute]) { var r0 = pendingRoute; pendingRoute = ""; applyRoute(r0); } else goHomePage();                   // a page address opened before sign-in is shown after it
+    if (pendingRoute && ROUTE_TABLE[pendingRoute]) { var r0 = pendingRoute; pendingRoute = ""; applyRoute(r0); } else goHomePage(); askAnalyticsChoice();                   // a page address opened before sign-in is shown after it
     fbLoadBank();
   }
   function signOut() {
@@ -384,7 +398,8 @@
     });
     $("btnUp").addEventListener("click", function (ev) {
       ev.preventDefault();
-      var p = { name: normName($("upName").value), email: normName($("upEmail").value), org: normName($("upOrg").value), country: normName($("upCountry").value), usage: $("upUsage").value, consent: true, terms: S.termsVersion };
+      var p = { name: normName($("upName").value), email: normName($("upEmail").value), org: normName($("upOrg").value), country: normName($("upCountry").value), usage: $("upUsage").value, consent: $("upAnalytics").checked, terms: S.termsVersion };
+      lsSet("qms.analyticsAsked." + String(p.email).toLowerCase(), true);                // the sign-up box is the answer
       var pw = $("upPass").value;
       if (!p.name || !p.email || !p.org || !p.country || !p.usage || !pw) { $("authErr").textContent = T("errFill"); return; }
       if (!validEmail(p.email)) { $("authErr").textContent = T("errEmail"); return; }

@@ -22,7 +22,7 @@
       }).catch(function () {});
     } catch (e) {}
   }
-  function freezeKey(c) { return JSON.stringify([c.quizLang, c.scope, c.books, c.numQ, c.source, c.style || "normal"]); }
+  function freezeKey(c) { return JSON.stringify([c.quizLang, c.scope, c.books, c.numQ, c.source, c.bankId || "", c.style || "normal"]); }
 
   /* picks the questions for a setup (used when freezing); resolves to rounds, or null when nothing matches */
   function buildRounds(c) {
@@ -78,7 +78,7 @@
     if (langInfo(c.quizLang).code === c.quizLang) quizLangPick = c.quizLang; else { quizLangPick = "other"; $("fOtherLang").value = c.quizLangLabel || c.quizLang; }
     $("fScope").value = c.scope === "b3" ? "bmore" : (c.scope || "");
     bookBoxes().forEach(function (cb) { cb.checked = (c.books || []).indexOf(cb.value) > -1; });
-    if (c.source === "kb") $("srcK").checked = true; else if (c.source === "bank") $("srcU").checked = true; else if (S.builtInBank) $("srcB").checked = true;
+    if (c.source === "kb") $("srcK").checked = true; else if (c.source === "bank") { $("srcU").checked = true; paintBankPick(); if (c.bankId && bankChoices().some(function (b) { return b.id === c.bankId; })) $("fBankPick").value = c.bankId; } else if (S.builtInBank) $("srcB").checked = true;
     $("fSaveRes").checked = c.saveResults !== false; $("fRead").checked = !!c.readAloud;
     sel.frozen = it.frozen || null; sel.frozenKey = it.frozen ? freezeKey(c) : "";
     ["fQM", "fEvent", "fParts", "fScope", "fOtherLang"].forEach(function (id) { markBad(id, false); });
@@ -98,7 +98,7 @@
     var item = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: name, kind: kind, savedAt: Date.now(), frozen: null,
       cfg: { qm: c.qm, event: c.event, date: kind === "event" ? c.date : "", parts: c.parts, quizLang: c.quizLang, quizLangLabel: c.quizLangLabel, mode: c.mode, style: c.style,
-             scope: c.scope, books: c.books, numQ: c.numQ, source: c.source, saveResults: c.saveResults, readAloud: c.readAloud }
+             scope: c.scope, books: c.books, numQ: c.numQ, source: c.source, bankId: c.bankId || "", saveResults: c.saveResults, readAloud: c.readAloud }
     };
     var commit = function () {
       setups = setups.filter(function (s) { return s.name.toLowerCase() !== name.toLowerCase(); }); setups.push(item); persistSetups(); renderSaved();
@@ -108,7 +108,7 @@
     if (!$("ssFreeze").checked) { commit(); return; }
     msg.className = "note"; msg.textContent = "...";
     buildRounds(c).then(function (rounds) {
-      if (!rounds) { msg.className = "err"; msg.textContent = c.source === "kb" ? T("kbNone") : (c.source === "bank" && !bank.length ? T("noBank") : T("availNone")); return; }
+      if (!rounds) { msg.className = "err"; msg.textContent = c.source === "kb" ? T("kbNone") : (c.source === "bank" && !bankQuestions(c.bankId).length ? T("noBank") : T("availNone")); return; }
       item.frozen = rounds; commit();
     });
   }

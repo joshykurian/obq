@@ -133,29 +133,6 @@
     if (file.arrayBuffer) return file.arrayBuffer();
     return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsArrayBuffer(file); });
   }
-  function importFile(file) {
-    var msg = $("upMsg"); msg.className = "note"; msg.style.whiteSpace = "pre-line"; msg.textContent = "...";
-    return ensureXlsx().then(function () { return readBuffer(file); }).then(function (buf) {
-      var wb = window.XLSX.read(buf, { type: "array" });
-      var name = wb.SheetNames.filter(function (n) { return /^questions$/i.test(n); })[0] || wb.SheetNames[0];
-      var rows = window.XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: false, defval: "" });
-      var res = parseRows(rows);
-      if (!res) { msg.className = "err"; msg.textContent = T("upErr"); return; }
-      clear(msg); msg.className = "note";
-      if (res.ok.length) {
-        bank = $("addMode").checked ? bank.concat(res.ok) : res.ok; saveBank();
-        msg.appendChild(el("div", "okmsg", T("upOk", { n: res.ok.length })));
-        track("bank_upload", { count: res.ok.length, skipped: res.skipped.length });
-      } else msg.appendChild(el("div", "err", T("upNone")));
-      if (res.skipped.length) {
-        var lines = [T("upSkip", { n: res.skipped.length })];
-        res.skipped.slice(0, 8).forEach(function (s) { lines.push("   " + s.row + ": " + s.why); });
-        if (res.skipped.length > 8) lines.push("   ...");
-        msg.appendChild(el("div", "err", lines.join("\n")));
-      }
-      paintBankInfo(); paintDashboard();
-    }).catch(function () { msg.className = "err"; msg.textContent = T("upErr"); });
-  }
   function dlTemplate() {
     var msg = $("upMsg");
     if (TEMPLATE_B64.indexOf("TEMPLATE_B64") > -1) { msg.className = "err"; msg.textContent = "Template not embedded in this build."; return; }
@@ -166,10 +143,9 @@
   }
 
   /* ---------- turning bank rows into quiz questions ---------- */
-  var STARTER = null;
-  function starter() {
-    if (STARTER) return STARTER;
-    STARTER = STARTER_BANK.map(function (r) {
+  var STARTER = null, SAMPLEQ = null;
+  function rowsToQs(rows) {
+    return rows.map(function (r) {
       var cat = { M: "mc", C: "clue", P: "multi", W: "oneword" }[r[1]] || "one";
       var q = { lang: "en", book: r[0], cat: cat, level: r[8] === "T" ? "trivia" : (r[8] === "D" ? "difficult" : ""), q: r[2], a: r[3], ref: r[4] || "", opts: r[5] || null, clues: r[6] || [], info: r[7] || "",
                 parts: r[9] || null, intro: "", pts: r[10] || 0, secs: r[11] || 0, builtin: true };
@@ -177,8 +153,9 @@
       if (cat === "mc") q.correct = q.opts.indexOf(q.a);
       return q;
     });
-    return STARTER;
   }
+  function starter() { if (!STARTER) STARTER = rowsToQs(STARTER_BANK); return STARTER; }                    // the built-in OBQ questions (a JSON bank, read only)
+  function sampleQs() { if (!SAMPLEQ) SAMPLEQ = rowsToQs(typeof SAMPLE_BANK !== "undefined" ? SAMPLE_BANK : []); return SAMPLEQ; }
   function firstChar(s) {
     try { if (window.Intl && Intl.Segmenter) { var it = new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(s)[Symbol.iterator]().next(); if (it && it.value) return it.value.segment; } } catch (e) {}
     return Array.from(s)[0] || "";
@@ -231,7 +208,7 @@
     }
   }
   function buildPool(c) {
-    var src = c.source === "bank" ? bank : (S.builtInBank ? starter() : []);
+    var src = c.source === "bank" ? bankQuestions(c.bankId) : (S.builtInBank ? starter() : []);
     return src.filter(function (q) { return (q.lang === "" || q.lang === c.quizLang) && inScope(q, c); });
   }
   function pickQuestions(pool, n) {
@@ -366,7 +343,8 @@
   }
   var quizLangPick = "en";
   function paintBankInfo() {
-    $("bankInfo").textContent = bank.length ? T("bankN", { n: bank.length }) : T("noBank");
+    var nb = bankChoices().reduce(function (n, b) { return b.kind === "builtin" ? n : n + b.count; }, 0);
+    $("bankInfo").textContent = nb ? T("bankN", { n: nb }) : T("noBank"); paintBankPick();
     $("kbInfo").textContent = kbMeta.length ? T("kbInfoN", { n: kbMeta.length }) : T("kbEmpty");
   }
   function buildBooks() {
@@ -402,7 +380,7 @@
     return {
       qm: normName($("fQM").value), event: normName($("fEvent").value), date: $("fDate").value || todayISO(),
       parts: parseInt($("fParts").value, 10) || 0, uiLang: ui, quizLang: lp.val, quizLangLabel: lp.label, mode: sel.mode, style: sel.style,
-      scope: $("fScope").value, books: selectedBooks(), numQ: sel.numQ, source: $("srcK").checked ? "kb" : ($("srcU").checked ? "bank" : "builtin"), sample: false, saveResults: !$("saveResWrap").hidden && $("fSaveRes").checked, readAloud: speechOK && $("fRead").checked
+      scope: $("fScope").value, books: selectedBooks(), numQ: sel.numQ, source: $("srcK").checked ? "kb" : ($("srcU").checked ? "bank" : "builtin"), bankId: $("srcU").checked ? ($("fBankPick").value || "main") : "", sample: false, saveResults: !$("saveResWrap").hidden && $("fSaveRes").checked, readAloud: speechOK && $("fRead").checked
     };
   }
   function scopeComplete(c) {
@@ -416,9 +394,18 @@
     if (c.scope === "b1" || c.scope === "b2" || c.scope === "bmore") return c.books.join(", ");
     return T({ nt: "scNT", ot: "scOT", bible: "scBible", any: "scAny" }[c.scope] || "scAny");
   }
+  function paintAiNote(c) {                                          // a reminder when the questions were made with AI or machine translation (or come from another Quiz Master)
+    var need = false;
+    if (c && c.quizLang) {
+      if (c.source === "kb") need = true;
+      else if (c.source === "bank") { var m = libList().filter(function (x) { return x.bid === c.bankId; })[0], ty = m && m.source && m.source.type; need = ty === "translation" || ty === "shared"; }
+      else if (c.quizLang !== "en") need = true;                       // the sample and demo questions in other languages
+    }
+    $("setupAiNote").hidden = !need;
+  }
   function refreshAvail() {
     sel.ack = false;
-    var c = readCfg(), t = $("availTxt"); t.textContent = ""; $("setupErr").textContent = "";
+    var c = readCfg(), t = $("availTxt"); t.textContent = ""; $("setupErr").textContent = ""; paintAiNote(c);
     if (!scopeComplete(c) || !c.quizLang) return;
     if (sel.frozen && sel.frozenKey === freezeKey(c)) { t.textContent = T("ssFrozenNote", { n: sel.frozen.length }); return; }
     if (c.source === "kb") {
@@ -426,7 +413,7 @@
       t.textContent = have.length ? T("kbAvail", { n: have.length }) : T("kbNone"); return;
     }
     if (c.source === "builtin" && c.quizLang !== "en") { t.textContent = T("builtinEn"); return; }
-    if (c.source === "bank" && !bank.length) { t.textContent = T("noBank"); return; }
+    if (c.source === "bank" && !bankQuestions(c.bankId).length) { t.textContent = T("noBank"); return; }
     var n = buildPool(c).length;
     t.textContent = n ? T("avail", { n: n }) : T("availNone");
   }
@@ -441,7 +428,7 @@
     else if (!scopeComplete(c)) { var lim = limitFor(c.scope); errs.push(lim ? T("pickExact", { n: lim, a: c.books.length }) : T("pickMin", { n: 3, a: c.books.length })); markBad("fScope", true); }
     markBad("fOtherLang", false);
     if (!c.quizLang) { errs.push(T("errOtherLang")); markBad("fOtherLang", true); }
-    if (c.source === "bank" && !bank.length) errs.push(T("noBank"));
+    if (c.source === "bank" && !bankQuestions(c.bankId).length) errs.push(T("noBank"));
     if (c.source === "kb" && c.quizLang && !kbMeta.some(function (m) { return m.lang === c.quizLang; })) errs.push(T("errNoKb"));
     return errs;
   }
@@ -515,55 +502,36 @@
     });
     $("begin").addEventListener("click", onBegin);
     $("trySample").addEventListener("click", onSample);
-    $("goHome").addEventListener("click", goHomePage); wireNav();
+    $("goHome").addEventListener("click", goHomePage); wireNav(); wirePhoto(); wireAbout();
     $("goDash").addEventListener("click", function () { openBuilder(""); });
     $("dashBack").addEventListener("click", goHomePage);
     $("dlTpl").addEventListener("click", dlTemplate);
-    $("upBtn").addEventListener("click", function () { $("fileIn").click(); });
-    $("fileIn").addEventListener("change", function () { var f = $("fileIn").files && $("fileIn").files[0]; if (f) importFile(f).then(function () { $("fileIn").value = ""; }); });
-    var armed = null;
-    $("clearBank").addEventListener("click", function () {
-      var b = $("clearBank");
-      if (!armed) { armed = setTimeout(function () { armed = null; b.textContent = T("clearBank"); }, 4000); b.textContent = T("confirmClear"); return; }
-      clearTimeout(armed); armed = null; b.textContent = T("clearBank"); bank = []; saveBank(); paintBankInfo(); paintDashboard(); $("upMsg").textContent = "";
-    });
+    wireBanks(); wireTranslate(); wireShare();
   }
 
   /* ---------- dashboard ---------- */
   var CAT_KEYS = { one: "catOne", mc: "catMC", oneword: "catWord", clue: "catClue", multi: "catMulti" };
   function paintBuilder() {
-    var box = $("bankStats"), tb = $("bankTable"); clear(box); clear(tb);
-    $("clearBank").disabled = !bank.length;
-    if (!bank.length) { box.appendChild(el("p", "note", T("bankEmpty"))); }
-    else {
-      box.appendChild(el("p", "pickinfo", T("bankN", { n: bank.length })));
-      var counts = {}; bank.forEach(function (q) { counts[q.cat] = (counts[q.cat] || 0) + 1; });
-      var line = el("div");
-      Object.keys(CAT_KEYS).forEach(function (k) { if (counts[k]) line.appendChild(el("span", "tag2", T(CAT_KEYS[k]) + ": " + counts[k])); });
-      box.appendChild(line);
-      box.appendChild(el("p", "note", T("preview")));
-      var hr = el("tr"); ["#", "Question", "Category", "Book", "Answer"].forEach(function (h) { hr.appendChild(el("th", null, h)); });
-      tb.appendChild(hr);
-      bank.slice(0, 10).forEach(function (q, i) {
-        var tr = el("tr");
-        [String(i + 1), (q.q || (q.parts ? q.parts.map(function (p) { return p.q; }).join(" | ") : "")).slice(0, 110), T(CAT_KEYS[q.cat]), q.book || "-", (q.parts ? q.parts.map(function (p) { return p.a; }).join(" | ") : q.a).slice(0, 60)].forEach(function (t) { tr.appendChild(el("td", null, t)); });
-        tb.appendChild(tr);
-      });
-    }
+    clear($("bankStats")); clear($("bankTable")); paintLibrary();
     paintKb();
   }
   /* the pages that used to be part of the Quiz Builder */
   function paintResults() { paintOwn(); }                         // my quiz results + my Firebase (on the Quiz Results page)
+  function analyticsTiles() {                                       // the numbers of the dashboard (also used for the PDF report)
+    var st = stats(), hist = history(), names = hist.reduce(function (n, r) { return n + (r.resultsCount || 0); }, 0), since = startDateISO();
+    var kbBooks = kbMeta.reduce(function (n, m) { return n + Object.keys(m.books || {}).length; }, 0), langs = st.langs || [];
+    var days = Math.max(0, Math.floor((Date.now() - new Date(since).getTime()) / 86400000));
+    return [["aSince", fmtDate(since.slice(0, 10)), "date"], ["aDays", days], ["aQuizzes", st.quizzes || 0], ["aFinished", hist.length], ["aParts", st.participants || 0], ["aLangs", langs.length],
+      ["aQs", st.questions || 0], ["aPdf", st.pdfs || 0], ["aPeople", names], ["aSaved", setups.length], ["aBankMine", bankChoices().reduce(function (n, b) { return b.kind === "builtin" ? n : n + b.count; }, 0)], ["aBankBuilt", starter().length], ["aKbTexts", kbMeta.length], ["aKbBooks", kbBooks]];
+  }
   function paintAnalytics() {
     Array.prototype.forEach.call(document.querySelectorAll("#panelActivity .langlist"), function (n) { n.remove(); });
-    var st = stats(), sb = $("stats"); clear(sb);
-    var hist = history(), names = hist.reduce(function (n, r) { return n + (r.resultsCount || 0); }, 0);
-    var kbBooks = kbMeta.reduce(function (n, m) { return n + Object.keys(m.books || {}).length; }, 0), langs = st.langs || [];
-    [["aQuizzes", st.quizzes], ["aFinished", hist.length], ["aParts", st.participants], ["aLangs", langs.length], ["aQs", st.questions], ["aPdf", st.pdfs], ["aPeople", names],
-     ["aBankMine", bank.length], ["aBankBuilt", starter().length], ["aKbTexts", kbMeta.length], ["aKbBooks", kbBooks]].forEach(function (p) {
-      var d = el("div", "stat"); d.appendChild(el("b", null, String(p[1] || 0))); d.appendChild(document.createTextNode(T(p[0]))); sb.appendChild(d);
+    var st = stats(), sb = $("stats"); clear(sb); var langs = st.langs || [];
+    analyticsTiles().forEach(function (p) {
+      var d = el("div", "stat" + (p[2] === "date" ? " small" : "")); d.appendChild(el("b", null, String(p[1]))); d.appendChild(document.createTextNode(T(p[0]))); sb.appendChild(d);
     });
     if (langs.length) { var ln = el("p", "note", T("aLangList", { list: langs.join(", ") })); sb.parentNode.insertBefore(ln, sb.nextSibling); ln.className = "note langlist"; }
     $("fbStatus").textContent = fb.on ? T("fbOn") : T("fbOff");
+    paintShare();
   }
   function paintDashboard() { paintBuilder(); paintResults(); paintAnalytics(); }

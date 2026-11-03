@@ -339,3 +339,182 @@ Object.assign(QUIZ_I18N.en, {
   hResults: "My Quiz Results", hResultsD: "Your finished quizzes on this device: download them as PDF or CSV.",
   sbPin: "Keep menu open", sbUnpin: "Collapse menu"
 });
+
+/* optional: share my analytics with the developers */
+Object.assign(QUIZ_I18N.en, {
+  shareTitle: "Share my analytics with the developers (optional)",
+  shareIntro: "You can send a snapshot of the numbers on this page to the developers of OBQ, to help them see how the app is used and improve it. Nothing is sent unless you press the button. Participant names, points and questions are never included. You can withdraw your shared snapshot at any time.",
+  shareBtn: "Share my analytics", shareWithdraw: "Withdraw my shared analytics", sharePreviewTitle: "This is exactly what will be sent:",
+  shareNote: "It is sent with your name, organisation and country, and replaces any snapshot you shared before.", shareSend: "Send to the developers", shareCancel: "Cancel",
+  shName: "Name", shOrg: "Organisation", shCountry: "Country",
+  shareNeedOnline: "Sharing needs an online account (sign in with the online accounts) and an internet connection.",
+  shareLast: "You last shared your analytics on {date}.", shareDone: "Thank you. Your analytics were shared with the developers.", shareWithdrawn: "Your shared analytics were withdrawn.",
+  shareFail: "Sorry, this could not be sent now. Check your internet connection and try again later.",
+  admShares: "Shared analytics (from Quiz Masters)", admSharesNote: "Snapshots that Quiz Masters chose to share. The newest snapshot of each Quiz Master is kept.", admSharesCsv: "Download shared analytics (CSV)", admStatShares: "Quiz Masters who shared analytics"
+});
+
+/* winners' photo, analytics report */
+Object.assign(QUIZ_I18N.en, {
+  aQuizzes: "Quizzes set up", aSince: "Using OBQ since", aDays: "Days using OBQ", aSaved: "Saved quiz set-ups",
+  anPdf: "Export to PDF", anPdfTitle: "Analytics Report", anPdfOverview: "Overview", anPdfLangs: "Quiz languages used", anPdfRecent: "Recent quizzes", anPdfGen: "Created on {date}",
+  anPdfPriv: "This report contains only totals. Participant names and points are not included.", colDate: "Date", colQuiz: "Quiz", colPlayers: "Participants", colQs: "Questions", colWinner: "Winner",
+  photoAsk: "Add a photo of the winners to the report (optional)", photoAdd: "Add photo", photoSkip: "Skip", photoChange: "Change photo", photoRemove: "Remove photo",
+  phTitle: "Photo of the winners", phIntro: "Choose how to add a photo. It is shown on this page and added to the PDF report. This step is optional.",
+  phShotT: "Take a screenshot", phShotD: "For online meetings: choose the meeting window or the screen that shows the winners.",
+  phCamT: "Open the camera", phCamD: "Take a photo with this device's camera. The browser will ask for your permission.",
+  phFileT: "Upload a photo", phFileD: "Choose a picture from the gallery of your phone or from your computer.",
+  phPrivacy: "The photo stays on this device. It is not sent anywhere and is forgotten when the next quiz ends. Make sure the people in it agree to it being in the report.",
+  phCancel: "Cancel", phBack: "Back", phFlip: "Switch camera", phUse: "Use this photo", phAgain: "Try again", phSnapPhoto: "Take photo", phSnapShot: "Take screenshot",
+  phCamTitle: "Point the camera at the winners, then press Take photo.", phScreenTitle: "Choose the meeting window or the screen, then press Take screenshot.",
+  phCamDenied: "The camera is blocked. Allow the camera for this site in your browser settings, or choose Upload a photo.", phCamFail: "The camera could not be opened on this device. You can choose Upload a photo instead.",
+  phScreenFail: "The screen could not be captured. Allow screen sharing, or choose another option.", phFileFail: "That file could not be used. Please choose a picture (JPG or PNG).", phCamApp: "Use the phone's camera app instead"
+});
+
+/* About and contact */
+Object.assign(QUIZ_I18N.en, {
+  hAbout: "About and Contact", hAboutD: "What OBQ is, the version, and a form to ask for information or help.",
+  abTitle: "About and Contact", abJump: "About", ctJump: "Contact us", abWhat: "About Oral Bible Quiz",
+  abIntro: "Oral Bible Quiz (OBQ) is a free tool that helps you lead live Bible quizzes for groups who learn by listening. The Quiz Master says the question, the group answers aloud, and OBQ looks after the questions, the timer, the scores and the results.",
+  abF1: "Quick quizzes (OBQ Lite) and fully set-up quizzes, with 11 interface languages.", abF2: "A built-in English question bank, your own questions from Excel, and questions made from Bible text in your language.",
+  abF3: "Presentation-remote keys, full screen for a projector, and read aloud.", abF4: "PDF and CSV results, an optional photo of the winners in the report, and an optional backup to your own Firebase.",
+  abF5: "Install it on your phone or computer and it runs offline.",
+  abPrivTitle: "Your data in short", abPrivacy: "Your participants' names and points stay on your device. OBQ's own cloud only counts that a quiz was set up. You decide whether to share your analytics or to send results to your own Firebase.",
+  abVersion: "Version {v}", abOperator: "Provided by {name}.", abTermsBtn: "Read the Terms and Conditions",
+  ctTitle: "Contact us", ctIntro: "Need more information, or help with something? Send us a message and we will reply by email.", ctName: "Your name", ctEmail: "Your email address (for the reply)", ctTopic: "What is your message about?",
+  ctT_info: "I need more information", ctT_support: "Support request (something does not work)", ctT_problem: "Report a problem", ctT_idea: "Suggestion or idea", ctT_feature: "Feature request", ctT_other: "Something else",
+  ctText: "Your message", ctCount: "{n} / 2000",
+  ctSendNote: "We also send the app version, your interface language and your browser type, to help us support you. We use your message and email address only to reply to you.",
+  ctSend: "Send message", ctSending: "Sending...", ctDone: "Thank you. Your message was sent. We will reply to your email address.",
+  ctNotReady: "The contact form is not set up on this site yet. Please try again later.", ctOffline: "You are offline. Please connect to the internet to send your message.",
+  ctFail: "Sorry, your message could not be sent. Please try again later.", ctLimit: "You have sent several messages recently. Please wait a while before sending another.", ctWait: "Please wait a minute before sending another message.", ctLinks: "Please remove some web links from your message (up to two are allowed).",
+  ctErrName: "Please enter your name.", ctErrEmail: "Please enter a valid email address.", ctErrText: "Please write a message of 10 to 2000 characters.",
+  admContact: "Contact messages", admContactNote: "Messages sent with the contact form (only when the form keeps them in this Firebase project).", admContactCsv: "Download contact messages (CSV)"
+});
+
+/* the question bank library (JSON banks) */
+Object.assign(QUIZ_I18N.en, {
+  bankJsonNote: "A JSON bank is a plain text file of your questions. You can also upload a JSON bank, and download any bank again as JSON or Excel.",
+  libTitle: "Question banks in this app (JSON files)", libName: "Name", libLang: "Language", libCount: "Questions", libSource: "From", libAdded: "Added",
+  libCore: "OBQ questions (English)", libStarter: "OBQ Starter set (English)", libMain: "My question bank (earlier upload)", libMixed: "Several",
+  libSrcBuilt: "Built in", libSrcExcel: "Excel file {f}", libSrcJson: "JSON file {f}", libSrcTr: "Translated, Bible text {b} ({e})", libSrcEarlier: "Earlier upload",
+  libUse: "Use in a quiz", libPreview: "Preview", libRename: "Rename", libDelete: "Delete", libDeleteSure: "Click again to delete", libExcelTr: "Excel for translation", libReview: "Review ({n})",
+  libEmpty: "No question banks yet. Upload an Excel or JSON file above.", libSaved: "Saved as the JSON question bank \u201C{name}\u201D with {n} questions.", libTooBig: "The bank \u201C{name}\u201D is too large to be copied to your account; it is kept on this device.",
+  upErrJson: "That JSON file could not be read. It should be an OBQ question bank or a list of questions.", bankPickLbl: "Which question bank?"
+});
+
+/* questions in the language of a Bible text */
+Object.assign(QUIZ_I18N.en, {
+  trMake: "Generate questions", trTitle: "Generate a question bank from the OBQ questions", trIntro: "Bible text: {b} ({l}). The OBQ questions are put into this language, and the answers, the reference and the verse text come from this Bible text, so they use its own wording.",
+  trBase: "Questions to start from", trCode: "Language code for the translation", trCodeNote: "For example hi, ml, ta, kn.", trEngine: "Translation by", trManual: "A person (Excel file, no service)",
+  trKey: "Key of the service", trKeyOpt: "Key (only if your server needs one)", trRegion: "Region (for example centralindia)", trUrl: "Server address",
+  trNote_google: "Google Cloud Translation: make an API key in your Google Cloud account (Cloud Translation API; billing must be switched on). The first 500,000 characters each month are free, then it costs about 20 US dollars for a million characters.",
+  trNote_microsoft: "Microsoft Translator (Azure AI Translator): the free plan allows 2 million characters a month. Use the key and the region of your Translator resource.",
+  trNote_libre: "LibreTranslate: the address of a LibreTranslate server (your own, or one you may use). Not every language is available.",
+  trNote_manual: "No service is used. Download the English questions as an Excel file, have them translated by a person (or with any tool you trust), and upload the translated file. The app then adds the verse text and the Bible's own wording.",
+  trTest: "Test run: only the first 20 questions (spread over the Bible)", trCover: "{n} of the {m} questions have all their verses in this Bible text. This run uses {k}.",
+  trCost: "About {c} characters will be sent to the translation service.", trStart: "Generate the question bank", trManualNote: "Excel route:", trDlXl: "Download the English questions (Excel)", trUpXl: "Upload the translated Excel",
+  trDlDone: "The Excel file was downloaded. Translate the Question, Option, Clue, Correct answer and Intro columns and keep the Reference column as it is, then upload it here.",
+  trWorking: "Working...", trProgress: "Translated {d} of {t}", trStopping: "Stopping... what is already translated is kept.", trCancelJob: "Stop", trClose: "Close", trCancelled: "Stopped. What was translated is kept, so you can start again and continue.",
+  trDone: "Saved the question bank \u201C{name}\u201D: {n} questions. {ok} use the Bible's own wording for the answers. {c} need a check.", trBankName: "OBQ questions in {l} ({b})", trTestTag: "test run",
+  trNoItems: "No question has all its verses in this Bible text. Add more books of the Bible text first.", trErrCode: "Please enter the language code for the translation (for example hi).", trErrNoKey: "Please enter the key of the translation service.", trErrUrl: "Please enter the server address (starting with https://).",
+  trErrKey2: "The service refused the key. Check the key (and region) and that the translation service is switched on in your account.", trErrBad: "The service did not accept the request. Check the language code.", trErrLimit: "The service says you have reached its limit. Wait a while and start again: what was translated is kept.",
+  trErrNet: "The translation service could not be reached. Check your internet connection and try again: what was translated is kept.",
+  trPrivacy: "The English question texts are sent to the translation service you choose, with your own key. The key is not saved. Machine translation needs a check by someone who knows the language.",
+  rvTitle: "Check the questions: {name}", rvInfo: "{n} question(s) need a check. Compare with the English, correct the wording, and tap words in the verse to use the Bible's own wording as the answer (tap the first and the last word).", rvNone: "Nothing left to check.",
+  rvEnglish: "English:", rvQuestion: "Question", rvIntro: "Introduction", rvAnswer: "Answer", rvOption: "Wrong option {n}", rvPartQ: "Part {n} question", rvPartA: "Part {n} answer", rvVerse: "The verse in this Bible:",
+  rvOk: "This is fine", rvRemove: "Remove this question", rvSave: "Save changes", rvSaved: "Saved.", rvPrev: "Previous", rvNext: "Next", rvPage: "Page {a} of {b}"
+});
+
+/* offer to make questions right after a Bible text is added */
+Object.assign(QUIZ_I18N.en, { trOfferText: "Next step: use this Bible text to generate the OBQ questions in {l}.", trOfferBtn: "Generate questions in {l} now" });
+
+/* free translation options, Old / New Testament counts */
+Object.assign(QUIZ_I18N.en, {
+  trOptGemini: "Google Gemini (free plan, with a key)", trOptChrome: "Chrome or Edge on this computer (free, no key)", trModel: "Model name", trKeyGemini: "API key (from Google AI Studio)",
+  trNote_gemini: "Google Gemini: make a free key in Google AI Studio (aistudio.google.com). The free plan has limits, and Google may use content sent on the free plan to improve its products, so a run can be slow and can pause when the limit is reached: what was translated is kept. If the model name stops working, use the name shown in AI Studio.",
+  trNote_chrome: "Free, no key, and nothing leaves this computer. It works in Chrome (version 138 or later) or Edge on a computer, not on phones, and only for languages the browser can translate, for example Hindi, Bengali, Kannada, Marathi, Tamil and Telugu. The first time, the browser downloads the language pack.",
+  trNote_chrome_no: "This browser cannot translate on the computer. Use Chrome (version 138 or later) or Edge on a computer, or choose another way.",
+  trCostChrome: "Nothing is sent anywhere: the translation runs on this computer.", trChromeDl: "Downloading the language pack... {p}%",
+  trErrChromeNo: "This browser cannot translate on the computer. Use Chrome (version 138 or later) or Edge on a computer, or choose another way.",
+  trErrChromeLang: "This language cannot be translated on this computer. Choose another way.", trErrChromeGesture: "The browser did not allow the language pack download. Press the button again.",
+  trErrChrome: "Translating on this computer did not work. Try again, or choose another way.", trErrGemini400: "Gemini did not accept the request. Check the key and the model name.",
+  trSplit: "From this Bible text: Old Testament {a} questions, New Testament {b} questions."
+});
+
+/* sharing question banks with other Quiz Masters */
+Object.assign(QUIZ_I18N.en, {
+  shShare: "Share", shUpdate: "Update shared copy", shStop: "Stop sharing", shStopSure: "Click again to stop sharing", shTagShared: "Shared with other Quiz Masters", libSrcShared: "From the server, shared by {by} (language code {iso})",
+  shTitle: "Share the question bank \u201c{name}\u201d", shInfo: "{n} questions in {l}. They are stored on the server so that other Quiz Masters can add them to their own question banks.",
+  shIso: "Language code (ISO)", shIsoNote: "Two or three letters, for example hi, ml, ta, ne, bn.", shNotes: "A note for other Quiz Masters (optional)",
+  shVerse: "Include the Bible verse text that is in the \u201cMore to know\u201d of these questions (only if you may share that Bible text)", shCheck: "Also share the {n} questions that still need a check",
+  shWhat: "What is shared: the questions, the name of the bank, its language, your name and your organisation. Not shared: your email address, your results and your Bible text files. You can stop sharing at any time. An administrator may hide a bank that does not follow the Terms.",
+  shConsent: "I wrote or translated these questions, or I may share them, and I allow other Quiz Masters to use them for free.", shSend: "Share with other Quiz Masters", shCancel: "Cancel", shSending: "Sharing...",
+  shDone: "Shared: {n} questions are now available to other Quiz Masters.", shErrIso: "Please enter the language code (two or three letters, for example hi).", shErrConsent: "Please tick the box to confirm.",
+  shErrNone: "There are no questions to share (questions that need a check are left out unless you tick the box).", shTooBig: "This bank is too big to share (up to 3,000 questions).",
+  shFail: "Sorry, this could not be done now. Check your internet connection and try again.", shNoRules: "The server is not ready for shared question banks yet. The administrator needs to publish the updated database rules.",
+  shStopped: "This bank is no longer shared. Your own copy is kept.", shNeed: "This needs an online account (sign in with the online accounts) and an internet connection.",
+  imTitle: "Additional question banks on the server", imIntro: "Question banks that other Quiz Masters shared. Add one to your own offline question banks.", imOpen: "Import Additional Question Bank",
+  imModalTitle: "Question banks shared by other Quiz Masters", imLangLabel: "Language", imFind: "Search", imLoading: "Loading the list...", imNone: "No question banks have been shared yet.", imCount: "{n} of {m} question banks",
+  imAllLang: "All languages", imName: "Name", imLangCol: "Language (ISO code)", imQs: "Questions", imBy: "Shared by", imDate: "Date", imDetails: "Details", imGet: "Download to my question banks",
+  imHave: "Already in your question banks", imMine: "Shared by you", imGetting: "Downloading \u201c{name}\u201d...", imAdded: "Added \u201c{name}\u201d ({n} questions) to your question banks.",
+  imFail: "Sorry, this question bank could not be downloaded. Try again later.", imClose: "Close",
+  shKindTr: "Translated from the OBQ questions (Bible text {b}, {e})", shKindExcel: "From an Excel file", shFlagged: "{n} still need a check", shHasVerse: "includes Bible verse text", shDownloads: "{n} downloads",
+  admBanks: "Shared question banks", admBanksNote: "Question banks that Quiz Masters shared with others. Hide one to take it off the list without deleting it.", admStatBanks: "Shared question banks", admHide: "Hide", admShow: "Show"
+});
+
+/* offline */
+Object.assign(QUIZ_I18N.en, {
+  offExcelReady: "Excel upload and download work offline (the Excel reader is saved on this device).", offExcelNot: "The Excel reader is not saved yet. Open the app with internet and wait a moment, then Excel upload and download work offline.",
+  xlsxOffline: "The Excel reader could not be loaded. Connect to the internet once, open the app and try again: after that it also works offline."
+});
+
+/* AI-generated content and accuracy */
+Object.assign(QUIZ_I18N.en, {
+  aiTitle: "Please note:", aiTag: "needs review (AI / machine translation)",
+  homeAiNote: "Questions in languages other than English, including the demo questions, were generated with the help of AI tools. Check and correct them before you use them with a public audience. We have not checked the theological accuracy of each question: a Bible scholar should review a question bank before wide release.",
+  abAiTitle: "Important: AI-generated content and accuracy",
+  abAi1: "Some content in OBQ is created or translated with the help of AI tools and machine translation: the demonstration questions and other content in languages other than English, the translations of the screens and messages, and question banks made with Generate questions or shared by other Quiz Masters.",
+  abAi2: "It can contain mistakes. Please read it, compare it with the Bible text and correct it before you use it with a public audience. You are responsible for what you present.",
+  abAi3: "We have not checked the theological accuracy of each question. A Bible scholar should review a question bank before wide release.",
+  setupAiNote: "These questions were generated or translated with AI tools or machine translation, or shared by another Quiz Master. Check and correct them before you use them with a public audience.",
+  trAiNote: "AI and machine translation can make mistakes, and answers can look right and be wrong. Check and correct every question before you use it with a public audience. We have not checked the theological accuracy of each question: a Bible scholar should review a question bank before wide release.",
+  bankAiNote: "Question banks that were generated, translated or shared by others can contain mistakes. Check them before you use them with a public audience. The theological accuracy of each question has not been checked: a Bible scholar should review a bank before wide release."
+});
+
+/* analytics choice */
+Object.assign(QUIZ_I18N.en, {
+  consCheck: "Allow anonymous usage analytics (optional; you can change this at any time in Settings)", consTitle: "Anonymous usage analytics",
+  consText: "May we collect anonymous usage analytics (for example which screens are used and how many quizzes are started) to improve OBQ? Nothing is collected unless you say yes, and you can change your choice at any time in Settings.",
+  consAllow: "Yes, allow", consDeny: "No, thank you"
+});
+
+/* contact form with a one-time code */
+Object.assign(QUIZ_I18N.en, {
+  ctEmail: "Your registered email address (the code and our reply go here)", ctCodeBtn: "Send me a code", ctResend: "Send a new code", ctCodeLabel: "The six-digit code from the email",
+  ctCodeSent: "We sent a six-digit code to {to}. It works once and for 10 minutes. Enter it below to send your message.",
+  ctSendNote: "To stop automatic and repeated messages we send a one-time code to the email address of your account first. We also send the app version, your interface language and your browser type, to help us support you. We use your message and email address only to reply to you. You can send up to 3 messages a day.",
+  ctNeedOnline: "The contact form needs an online account (sign in with the online accounts) and an internet connection.",
+  ctR_wait: "Please wait a minute before you ask for another code.", ctR_daily_codes: "You have asked for several codes today. Please try again tomorrow.",
+  ctR_daily_messages: "You have already sent the most messages that one account may send in a day. Please try again tomorrow.", ctR_wrong_code: "That code is not right. Check the email and try again.",
+  ctR_code_expired: "The code has run out or was already used. Press Send me a code to get a new one.", ctR_too_many_attempts: "Too many wrong tries. Press Send me a code to get a new one.",
+  ctR_email_not_verified: "Please confirm your email address first (use the link in the confirmation email).", ctR_bad_message: "Please choose a topic and write a message of 10 to 2000 characters.",
+  ctR_too_many_links: "Please remove some web links from your message (up to two are allowed).", ctR_sign_in: "Please sign in with your online account.", ctR_fail: "Sorry, this could not be done now. Please try again later."
+});
+
+Object.assign(QUIZ_I18N.en, { shSlotsFull: "You can share up to 10 question banks. Stop sharing one of them first." });
+
+/* your data */
+Object.assign(QUIZ_I18N.en, {
+  mdTitle: "Your data", mdIntro: "Download a copy of the data that the app holds for your account: your profile, settings, finished quizzes, saved quizzes and question banks on this device, and, when you are signed in online, the records stored in the cloud (sign-ins, quiz set-up records, shared banks and shared analytics). Participant names and points are never stored in the cloud.",
+  mdDownload: "Download my data", mdDelTitle: "Delete my account", mdDelText: "This deletes your account and the data stored for it in the cloud (profile, sign-in records, quiz set-up records, saved quizzes, saved and shared question banks, shared analytics) and the data of this account on this device. It cannot be undone. Download your data first if you want to keep it.",
+  mdConfirmLabel: "Type DELETE to confirm", mdDelete: "Delete my account and data", mdPreparing: "Preparing your data...", mdDownloaded: "Your data was saved to a file.", mdDeleting: "Deleting...",
+  mdConfirmNeed: "Please type DELETE to confirm.", mdRecent: "For your safety, please sign out, sign in again and try once more (deleting an account needs a recent sign-in). Some of your data may already be deleted.", mdFail: "Sorry, this could not be done now. Please try again later."
+});
+
+/* contact form on the free Firebase plan: a confirmation link instead of a typed code */
+Object.assign(QUIZ_I18N.en, {
+  ctLinkBtn: "Email me a confirmation link", ctLinkSent: "We sent a confirmation link to {to}. Open it in this browser: it signs you in again and brings you back here, and then you can send your message within 9 minutes.",
+  ctConfirmed: "Your email is confirmed. You can send your message now (within 9 minutes).",
+  ctSendNote2: "To stop automatic and repeated messages we email a one-time confirmation link to the address of your account first. We also send the app version, your interface language and your browser type, to help us support you. We use your message and email address only to reply to you. You can send up to 3 messages a day.",
+  ctR_not_sent: "The message was not sent: either you have already sent 3 messages today, or the email confirmation is more than 9 minutes old. Please confirm again, or try tomorrow."
+});

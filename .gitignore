@@ -24,3 +24,7 @@ obq-bible-text-bundle.zip
 node_modules/
 __pycache__/
 .DS_Store
+
+node_modules/
+functions/node_modules/
+functions/.env

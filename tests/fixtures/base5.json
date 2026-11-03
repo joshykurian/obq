@@ -1,0 +1,59 @@
+{
+ "format": "obq-bank",
+ "version": 1,
+ "name": "English base (5)",
+ "lang": "en",
+ "questions": [
+  {
+   "lang": "en",
+   "book": "Genesis",
+   "cat": "one",
+   "q": "What did God create on the first day?",
+   "a": "Light",
+   "ref": "Genesis 1:3-5",
+   "info": "x"
+  },
+  {
+   "lang": "en",
+   "book": "John",
+   "cat": "one",
+   "q": "What did God give so that whoever believes would not perish?",
+   "a": "His only Son",
+   "ref": "John 3:16"
+  },
+  {
+   "lang": "en",
+   "book": "Genesis",
+   "cat": "mc",
+   "q": "Who created the heavens and the earth?",
+   "opts": [
+    "God",
+    "Moses",
+    "Noah",
+    "David"
+   ],
+   "correct": 0,
+   "a": "God",
+   "ref": "Genesis 1:1"
+  },
+  {
+   "lang": "en",
+   "book": "Genesis",
+   "cat": "one",
+   "q": "What was the first creation named?",
+   "a": "Brightness",
+   "ref": "Genesis 1:3-5"
+  },
+  {
+   "lang": "en",
+   "book": "Genesis",
+   "cat": "oneword",
+   "q": "Who was the first son of Adam and Eve?",
+   "a": "Cain",
+   "ref": "Genesis 4:1-2, 8, 14-15",
+   "clues": [
+    "He was a farmer"
+   ]
+  }
+ ]
+}
