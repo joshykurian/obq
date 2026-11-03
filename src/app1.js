@@ -370,7 +370,7 @@
     var done = function () {
       if (S.firebase.measurementId) window["ga-disable-" + S.firebase.measurementId] = true;
       if (fb.analytics) { try { fb.analytics.setAnalyticsCollectionEnabled(false); } catch (e) {} }
-      user = null; bank = []; kbMeta = []; setups = []; isAdmin = false; $("goAdmin").hidden = true; ownApp = null; if ($("savedList")) renderSaved(); sessDel(); $("uname").textContent = ""; resetUrl(); $("inEmail").value = ""; $("inPass").value = "";
+      user = null; bank = []; kbClear(); setupClear(); isAdmin = false; $("goAdmin").hidden = true; ownApp = null; if ($("savedList")) renderSaved(); sessDel(); $("uname").textContent = ""; resetUrl(); $("inEmail").value = ""; $("inPass").value = "";
       ["upName", "upEmail", "upOrg", "upCountry", "upPass"].forEach(function (id) { $(id).value = ""; });
       $("upUsage").value = ""; resetTermsBox("upTerms"); resetTermsBox("pfTerms"); $("tbRight").hidden = true; hideVerify(); setAuthTab("in"); authBusy(false); show("auth");
     };

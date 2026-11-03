@@ -1,4 +1,4 @@
-/* @module {"name":"mydata","exports":["wireMyData","paintMyData"],"uses":["$","S","T","fb","history","idbDo","libDoc","libId","libList","localUsers","lsDel","lsGet","lsSet","saveFile","setups","todayISO","track","user"]} */
+/* @module {"name":"mydata","exports":["wireMyData","paintMyData"],"uses":["$","S","T","fb","history","idbDo","libDoc","libId","libList","localUsers","lsDel","lsGet","lsSet","saveFile","setupList","todayISO","track","user"]} */
   /* YOUR DATA (Settings). The rights of access and erasure as buttons: download everything the app holds for this account (on this device and, when signed in online,
      in the cloud), or delete the account together with the data stored for it. The names and points of participants are not stored with the account at all. */
   function paintMyData() { $("mdMsg").textContent = ""; $("mdMsg").className = "note"; $("mdConfirm").value = ""; $("mdDelete").disabled = true; }
@@ -6,7 +6,7 @@
   function cloudDocs(col, uid) { return fb.db.collection(col).where("uid", "==", uid).limit(500).get().then(function (s) { return s.docs || []; }); }
   function collect() {
     var out = { exportedAt: new Date().toISOString(), appVersion: S.appVersion, account: { name: user.name, email: user.email, organisation: user.org, country: user.country, use: user.usage, analyticsConsent: user.consent === true, termsAccepted: user.terms || "" },
-      onThisDevice: { settings: lsGet("qms.settings", {}), stats: lsGet("qms.stats", {}), finishedQuizzes: history(), savedQuizzes: setups, questionBanks: libList().map(function (m) { return libDoc(m.bid); }) }, inTheCloud: null };
+      onThisDevice: { settings: lsGet("qms.settings", {}), stats: lsGet("qms.stats", {}), finishedQuizzes: history(), savedQuizzes: setupList(), questionBanks: libList().map(function (m) { return libDoc(m.bid); }) }, inTheCloud: null };
     if (!(fb.on && user && user.uid)) return Promise.resolve(out);
     var uid = user.uid, cloud = {}, root = fb.db.collection("quizMasters").doc(uid);
     function plain(d) { var o = d.data(); Object.keys(o).forEach(function (k) { var v = o[k]; if (v && v.toDate) o[k] = v.toDate().toISOString(); }); return o; }

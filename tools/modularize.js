@@ -3,8 +3,11 @@
 //   node tools/modularize.js src/app_art.js [--write]     (--write moves the file to src/modules/ with a header; then run  node tools/check_modules.js --fix)
 const fs = require("fs"), path = require("path"), cm = require("./check_modules.js");
 const root = path.join(__dirname, ".."), src = path.join(root, "src");
+function strip(code) {                                         // names inside comments and quoted text are not uses of a variable
+  return code.replace(/^\/\*\s*@module[\s\S]*?\*\//, "").replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:\\])\/\/[^\n]*/g, "$1 ").replace(/"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`/g, '""');
+}
 function others(except) {
-  const out = []; for (const d of [src, path.join(src, "modules")]) for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (!f.endsWith(".js") || f.startsWith("cfg") || p === except || fs.statSync(p).isDirectory()) continue; out.push([p, fs.readFileSync(p, "utf8")]); }
+  const out = []; for (const d of [src, path.join(src, "modules")]) for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (!f.endsWith(".js") || f.startsWith("cfg") || p === except || fs.statSync(p).isDirectory()) continue; out.push([p, strip(fs.readFileSync(p, "utf8"))]); }
   return out;
 }
 function plan(file) {

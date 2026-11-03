@@ -9,7 +9,7 @@ Every release must pass the checks. They run on every push (GitHub Action "Build
 | Build | valid JavaScript, one version number (`src/cfg1.js` = newest `CHANGELOG.md` entry), nothing private in the build, small page, **the offline cache saves the Excel reader** | `tests/cases/test_build.py` |
 | Names | no two functions with the same name; the build stops | `tools/assemble.py` |
 | Modules | a module takes from the shared scope only what its header lists; the number of names in the shared scope may only go down | `tools/check_modules.js`, `tests/cases/test_modules.py` |
-| Translations | placeholders unchanged, no unknown keys, **the number of translated strings may not fall** | `tests/cases/test_i18n.py` |
+| Translations | placeholders unchanged, no unknown keys, **every text translated in all 10 languages**, the screens really show them | `tests/cases/test_i18n.py` |
 | Accessibility | **focus stays inside pop-ups**, every control has a name, colour contrast | `tests/cases/test_a11y.py` |
 | Offline | the installed app opens and Excel upload works without internet | `tests/cases/test_offline.py` |
 | Features | navigation, quiz and PDF, question banks, translation, sharing, contact, privacy | `tests/cases/test_*.py` |
@@ -21,10 +21,10 @@ Every release must pass the checks. They run on every push (GitHub Action "Build
 Put new code in `src/modules/<name>.js`. The first line is a header: `/* @module {"name":"x","exports":["openX"],"uses":[]} */`. Write the code, then run
 `node tools/check_modules.js --fix` (it writes the list of shared names the module uses: read it, that is its dependency list) and add a call in `boot()` in `src/app4.js` if it needs wiring.
 Inside a module every name is private; only `exports` are visible to other files. Older files are moved with `node tools/modularize.js src/app_x.js --write`
-(it refuses when an exported variable changes after it is set: export a function instead). Still to move: `app1.js`, `app2.js`, `app3.js`, `app4.js`, `app_kb.js`, `app_saved.js`, `app_own.js`, `app_home.js`, `app_settings.js`, `app_router.js`. (Before moving a file, replace every use of a variable that changes by a small function, as was done for `libList()` and `libSay()` in the banks module.)
+(it refuses when an exported variable changes after it is set: export a function instead). Still to move: `app1.js`, `app2.js`, `app3.js`, `app4.js`, `app_own.js`, `app_router.js`. (Before moving a file, replace every use of a variable that changes by a small function, as was done for `libList()` and `libSay()` in the banks module.)
 
 ## Translations
-`node tools/i18n_report.js` shows the coverage. New English texts go in `src/cfg2_extra.js` (`Object.assign(QUIZ_I18N.en, {...})`); translations go in `src/cfg2_tr_<code>.js`.
+`node tools/i18n_report.js` shows the coverage. **Every interface text must be translated in all 10 languages: a new English text fails the check until it is.** New English texts go in `src/cfg2_extra.js` (`Object.assign(QUIZ_I18N.en, {...})`); the ten translations go in `src/cfg2_tr_<code>.js` (`python tools/i18n_export.py` lists what is missing). `OBQ_ALLOW_MISSING_I18N=1` lets a draft build pass for a short time.
 Machine translations need a native reader: mark them as reviewed only when someone has done it. After translating run `OBQ_UPDATE_BASELINE=1 python tests/run_all.py i18n`.
 
 ## Before a release

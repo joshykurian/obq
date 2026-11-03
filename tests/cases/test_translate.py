@@ -23,6 +23,12 @@ def run(t):
         pg.evaluate("[...document.getElementById('trBase').options].forEach((o,i)=>{ if(/English base/.test(o.textContent)) document.getElementById('trBase').selectedIndex=i })"); pg.dispatch_event("#trBase", "change"); pg.wait_for_timeout(400); pg.uncheck("#trTest") if pg.is_checked("#trTest") else None; pg.wait_for_timeout(300)
         ok("it counts the questions this Bible text can give (all 5) and splits them", "5 of the 5" in p.inner_text("#trCover") and "Old Testament 4" in p.inner_text("#trSplit") and "New Testament 1" in p.inner_text("#trSplit"), p.inner_text("#trSplit"))
         ok("the services offered include the free ones", all(x in pg.evaluate("[...document.getElementById('trEngine').options].map(o=>o.textContent).join('|')") for x in ("Gemini", "Chrome", "Google Cloud", "Microsoft", "Libre")))
+        labels = pg.evaluate("Object.fromEntries([...document.getElementById('trEngine').options].map(o=>[o.value,o.textContent]))")
+        ok("every service says in its title what it costs (Free, Limited free, then paid)", all("Limited free" in labels[k] for k in ("google", "microsoft", "gemini")) and "Free" in labels["chrome"] and "Free" in labels["libre"] and "Free" in labels["manual"], str(labels))
+        for eng, n, host in (("gemini", 3, "aistudio.google.com"), ("google", 5, "console.cloud.google.com"), ("microsoft", 4, "portal.azure.com"), ("libre", 2, "libretranslate.com")):
+            pg.select_option("#trEngine", eng); pg.wait_for_timeout(150)
+            ok("%s: %d steps to get a key and a link to %s" % (eng, n, host), pg.locator("#trHowSteps li").count() == n and host in (pg.get_attribute("#trHowLink", "data-url") or "") and p.is_visible("#trHow"))
+        pg.select_option("#trEngine", "chrome"); ok("Chrome needs no key, so no instructions", not p.is_visible("#trHow")); pg.select_option("#trEngine", "manual"); ok("the Excel route needs no key either", not p.is_visible("#trHow"))
         def go(key="K"):
             if p.is_visible("#trKeyWrap"): pg.fill("#trKey", key)
             p.click("#trStart"); pg.wait_for_function("document.getElementById('trResult').textContent.length>3 && document.getElementById('trStatus').offsetParent===null || document.getElementById('trResult').textContent.indexOf('Saved')===0", timeout=60000); pg.wait_for_timeout(300); return p.inner_text("#trResult")

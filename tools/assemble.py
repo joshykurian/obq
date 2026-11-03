@@ -72,7 +72,7 @@ else:
     print("firebase config: none (local mode)")
 
 # 3. engine
-ENGINE_FILES = ["app1.js", "app2.js", "app_kb.js", "app_saved.js", "app_own.js", "app_home.js", "app_settings.js", "app_router.js", "app3.js", "app4.js"]
+ENGINE_FILES = ["app1.js", "app2.js", "app_own.js", "app_router.js", "app3.js", "app4.js"]
 _seen = {}
 for _n in ENGINE_FILES:                                  # two functions with the same name would silently replace each other: stop the build instead
     for _m in re.finditer(r"^  function ([A-Za-z0-9_$]+)\(", rd(_n), re.M):

@@ -287,3 +287,7 @@
   .aiwarn[hidden] { display: none; }
   .aiwarn h2 { margin: 0 0 6px; } .aiwarn p { margin: 6px 0; }
   dl.faq dt { font-weight: 800; margin-top: 12px; } dl.faq dd { margin: 4px 0 0; }
+  .howkey { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin: 10px 0; }
+  .howkey ol { margin: 6px 0 10px; padding-inline-start: 1.4em; line-height: 1.55; }
+  .howkey h3 { margin: 0 0 4px; }
+  .fgrid .field.wide { grid-column: 1 / -1; } .fgrid .field.wide select { width: 100%; }

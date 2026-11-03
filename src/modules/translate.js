@@ -230,12 +230,18 @@
     libList().forEach(function (m) { if (m.lang === "en") out.push({ id: m.bid, name: m.name, n: m.count }); });
     return out;
   }
+  /* the steps that tell a Quiz Master how to get a key, and the page to start from (the texts are trHow_<service>_<number>) */
+  var TR_HOW = { gemini: { steps: 3, url: "https://aistudio.google.com/apikey" }, google: { steps: 5, url: "https://console.cloud.google.com/" },
+                 microsoft: { steps: 4, url: "https://portal.azure.com/" }, libre: { steps: 2, url: "https://libretranslate.com/" } };
   function trEngineUi() {
     var e = $("trEngine").value, manual = e === "manual", noChrome = e === "chrome" && !("Translator" in self);
     $("trKeyWrap").hidden = manual || e === "chrome"; $("trRegionWrap").hidden = e !== "microsoft"; $("trUrlWrap").hidden = e !== "libre"; $("trModelWrap").hidden = e !== "gemini";
     $("trAutoRow").hidden = manual; $("trManualRow").hidden = !manual;
     $("trEngineNote").textContent = T(noChrome ? "trNote_chrome_no" : "trNote_" + e);
     $("trKeyWrap").querySelector("label").textContent = T(e === "libre" ? "trKeyOpt" : (e === "gemini" ? "trKeyGemini" : "trKey"));
+    var how = $("trHow"), steps = $("trHowSteps"), n = TR_HOW[e] ? TR_HOW[e].steps : 0; clear(steps);
+    for (var i = 1; i <= n; i++) steps.appendChild(el("li", null, T("trHow_" + e + "_" + i)));
+    how.hidden = !n; if (n) $("trHowLink").dataset.url = TR_HOW[e].url;
     trRefreshPlan(); if (noChrome) $("trStart").disabled = true;
   }
   function trRefreshPlan() {
@@ -347,6 +353,7 @@
     libStore(doc).then(function () { $("rvMsg").className = "okmsg"; $("rvMsg").textContent = T("rvSaved"); });
   }
   function wireTranslate() {
+    $("trHowLink").addEventListener("click", function () { var u = $("trHowLink").dataset.url; if (u) window.open(u, "_blank", "noopener,noreferrer"); });
     $("trEngine").addEventListener("change", trEngineUi); $("trBase").addEventListener("change", trRefreshPlan); $("trTest").addEventListener("change", trRefreshPlan);
     $("trStart").addEventListener("click", trStart); $("trCancel").addEventListener("click", function () { TR.cancel = true; $("trStatus").textContent = T("trStopping"); });
     $("trClose").addEventListener("click", closeTranslate); $("trDlXl").addEventListener("click", trDownloadExcel); $("trUpXl").addEventListener("click", function () { $("trXlFile").click(); });

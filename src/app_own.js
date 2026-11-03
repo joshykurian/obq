@@ -186,7 +186,7 @@
     var st = stats(), hist = history();
     return { uid: user.uid, name: user.name || "", org: user.org || "", country: user.country || "", quizzes: st.quizzes || 0, finished: hist.length, participants: st.participants || 0,
       languages: (st.langs || []).slice(0, 40), questions: st.questions || 0, pdfs: st.pdfs || 0, names: hist.reduce(function (n, r) { return n + (r.resultsCount || 0); }, 0),
-      bankMine: bankChoices().reduce(function (n, b) { return b.kind === "builtin" ? n : n + b.count; }, 0), bankBuiltin: starter().length, kbTexts: kbMeta.length, kbBooks: kbMeta.reduce(function (n, m) { return n + Object.keys(m.books || {}).length; }, 0), uiLang: ui, appVersion: S.appVersion || "" };
+      bankMine: bankChoices().reduce(function (n, b) { return b.kind === "builtin" ? n : n + b.count; }, 0), bankBuiltin: starter().length, kbTexts: kbList().length, kbBooks: kbList().reduce(function (n, m) { return n + Object.keys(m.books || {}).length; }, 0), uiLang: ui, appVersion: S.appVersion || "" };
   }
   function shareKey() { return "qms.sharedAt." + (user && user.uid); }
   function paintShare() {

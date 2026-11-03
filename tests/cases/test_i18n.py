@@ -20,6 +20,8 @@ def run(t):
     now = {l: v["have"] for l, v in data["langs"].items()}
     for l, n in now.items(): ok("%s: %d of %d strings translated (%.0f%%; baseline %d)" % (l, n, data["total"], 100.0 * n / data["total"], base.get(l, 0)), n >= base.get(l, 0))
     if os.environ.get("OBQ_UPDATE_BASELINE") == "1": json.dump(now, open(base_path, "w"), indent=1); print("   baseline updated")
+    for l, v in data["langs"].items():                                                                 # 3b. since 1.10 every text is translated: a new English text needs its ten translations in the same release
+        ok("%s: no English text is left untranslated" % l, not v["missing"] or os.environ.get("OBQ_ALLOW_MISSING_I18N") == "1", "missing: %s" % v["missing"][:6])
 
     with t.site("local") as base, t.page(base) as p:                                                       # 4. the screens really show the translations (and Urdu turns right to left)
         p.open(); p.signup("i18n@e.org")

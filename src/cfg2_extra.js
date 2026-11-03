@@ -386,7 +386,7 @@ Object.assign(QUIZ_I18N.en, {
   ctSendNote: "We also send the app version, your interface language and your browser type, to help us support you. We use your message and email address only to reply to you.",
   ctSend: "Send message", ctSending: "Sending...", ctDone: "Thank you. Your message was sent. We will reply to your email address.",
   ctNotReady: "The contact form is not set up on this site yet. Please try again later.", ctOffline: "You are offline. Please connect to the internet to send your message.",
-  ctFail: "Sorry, your message could not be sent. Please try again later.", ctLimit: "You have sent several messages recently. Please wait a while before sending another.", ctWait: "Please wait a minute before sending another message.", ctLinks: "Please remove some web links from your message (up to two are allowed).",
+  ctFail: "Sorry, your message could not be sent. Please try again later.", ctWait: "Please wait a minute before sending another message.",
   ctErrName: "Please enter your name.", ctErrEmail: "Please enter a valid email address.", ctErrText: "Please write a message of 10 to 2000 characters.",
   admContact: "Contact messages", admContactNote: "Messages sent with the contact form (only when the form keeps them in this Firebase project).", admContactCsv: "Download contact messages (CSV)"
 });
@@ -517,4 +517,28 @@ Object.assign(QUIZ_I18N.en, {
   ctConfirmed: "Your email is confirmed. You can send your message now (within 9 minutes).",
   ctSendNote2: "To stop automatic and repeated messages we email a one-time confirmation link to the address of your account first. We also send the app version, your interface language and your browser type, to help us support you. We use your message and email address only to reply to you. You can send up to 3 messages a day.",
   ctR_not_sent: "The message was not sent: either you have already sent 3 messages today, or the email confirmation is more than 9 minutes old. Please confirm again, or try tomorrow."
+});
+
+/* translation services: how to get a key, and what each one costs */
+Object.assign(QUIZ_I18N.en, {
+  trHowTitle: "How to get a key for this service", trHowOpen: "Open the website of this service (new tab)",
+  trHowPrivacy: "Keep your key private: do not share it, and do not paste it anywhere except this box. The app does not save it. Prices and free allowances change: check the service's own page before you start.",
+  trOptGoogle: "Google Cloud Translation (Limited free, then paid: 500,000 characters a month free, billing needed)",
+  trOptMicrosoft: "Microsoft Translator on Azure (Limited free, then paid: 2 million characters a month free)",
+  trOptGemini: "Google Gemini (Limited free, key from Google AI Studio)", trOptChrome: "Chrome or Edge on this computer (Free, no key)",
+  trOptLibre: "LibreTranslate (Free on your own server)", trManual: "A person with an Excel file (Free, no service)",
+  trHow_gemini_1: "Open Google AI Studio (button below) and sign in with a Google account.",
+  trHow_gemini_2: "Press Get API key, then Create API key, and choose or create a project.",
+  trHow_gemini_3: "Copy the key and paste it in the key box above. Keep the model name as it is; if it stops working, use the model name shown in AI Studio.",
+  trHow_google_1: "Open the Google Cloud console (button below), sign in and create a project.",
+  trHow_google_2: "Switch on billing for the project (a payment card is needed; the first 500,000 characters each month are free, after that the service is paid).",
+  trHow_google_3: "Open APIs and services, then Library, search for Cloud Translation API and press Enable.",
+  trHow_google_4: "Open APIs and services, then Credentials, press Create credentials, then API key, and copy the key.",
+  trHow_google_5: "Recommended: restrict the key to the Cloud Translation API, then paste it in the key box above.",
+  trHow_microsoft_1: "Open the Azure portal (button below) and sign in (a free Azure account asks for a card to confirm who you are).",
+  trHow_microsoft_2: "Press Create a resource, search for Translator, and press Create.",
+  trHow_microsoft_3: "Choose the Free pricing tier (F0: 2 million characters a month free) and a region near you, then create it.",
+  trHow_microsoft_4: "Open the resource, then Keys and Endpoint. Copy KEY 1 into the key box above and the region (for example centralindia) into the Region box.",
+  trHow_libre_1: "Use a LibreTranslate server that you run yourself (free software; see libretranslate.com) or one that you are allowed to use. Public servers may ask for a paid key.",
+  trHow_libre_2: "Type the server address (starting with https://) in the box above. Type a key only if the server asks for one."
 });

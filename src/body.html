@@ -686,7 +686,7 @@
         <div class="fgrid">
           <div class="field"><label for="trBase" data-i18n="trBase"></label><select id="trBase"></select></div>
           <div class="field"><label for="trCode" data-i18n="trCode"></label><input type="text" id="trCode" maxlength="8" autocomplete="off"><small data-i18n="trCodeNote"></small></div>
-          <div class="field"><label for="trEngine" data-i18n="trEngine"></label><select id="trEngine"><option value="google">Google Cloud Translation</option><option value="microsoft">Microsoft Translator</option><option value="gemini" data-i18n="trOptGemini"></option><option value="chrome" data-i18n="trOptChrome"></option><option value="libre">LibreTranslate</option><option value="manual" data-i18n="trManual"></option></select></div>
+          <div class="field wide"><label for="trEngine" data-i18n="trEngine"></label><select id="trEngine"><option value="google" data-i18n="trOptGoogle"></option><option value="microsoft" data-i18n="trOptMicrosoft"></option><option value="gemini" data-i18n="trOptGemini"></option><option value="chrome" data-i18n="trOptChrome"></option><option value="libre" data-i18n="trOptLibre"></option><option value="manual" data-i18n="trManual"></option></select></div>
         </div>
         <div class="fgrid">
           <div class="field" id="trKeyWrap"><label for="trKey"></label><input type="password" id="trKey" autocomplete="off"></div>
@@ -695,6 +695,7 @@
           <div class="field" id="trUrlWrap" hidden><label for="trUrl" data-i18n="trUrl"></label><input type="text" id="trUrl" autocomplete="off" placeholder="https://"></div>
         </div>
         <p class="note" id="trEngineNote"></p>
+        <div class="howkey" id="trHow" hidden><h3 class="gh2" data-i18n="trHowTitle"></h3><ol id="trHowSteps"></ol><p><button class="ghost" id="trHowLink" type="button" data-url="" data-i18n="trHowOpen"></button></p><p class="note" data-i18n="trHowPrivacy"></p></div>
         <label class="check"><input type="checkbox" id="trTest" checked><span data-i18n="trTest"></span></label>
         <p class="pickinfo" id="trCover"></p>
         <p class="note" id="trSplit"></p>

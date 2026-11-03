@@ -345,7 +345,7 @@
   function paintBankInfo() {
     var nb = bankChoices().reduce(function (n, b) { return b.kind === "builtin" ? n : n + b.count; }, 0);
     $("bankInfo").textContent = nb ? T("bankN", { n: nb }) : T("noBank"); paintBankPick();
-    $("kbInfo").textContent = kbMeta.length ? T("kbInfoN", { n: kbMeta.length }) : T("kbEmpty");
+    $("kbInfo").textContent = kbList().length ? T("kbInfoN", { n: kbList().length }) : T("kbEmpty");
   }
   function buildBooks() {
     function build(box, list) {
@@ -429,7 +429,7 @@
     markBad("fOtherLang", false);
     if (!c.quizLang) { errs.push(T("errOtherLang")); markBad("fOtherLang", true); }
     if (c.source === "bank" && !bankQuestions(c.bankId).length) errs.push(T("noBank"));
-    if (c.source === "kb" && c.quizLang && !kbMeta.some(function (m) { return m.lang === c.quizLang; })) errs.push(T("errNoKb"));
+    if (c.source === "kb" && c.quizLang && !kbList().some(function (m) { return m.lang === c.quizLang; })) errs.push(T("errNoKb"));
     return errs;
   }
   function onBegin() {
@@ -473,7 +473,7 @@
   }
   function goSetup() {
     if (!sel.numQ) sel.numQ = S.questionCounts[0];
-    if (clearOnNextSetup) { clearOnNextSetup = false; clearSetup(); }
+    if (popClearSetup()) clearSetup();
     if (!$("fQM").value && user) $("fQM").value = user.name || "";
     if (!$("fDate").value) $("fDate").value = todayISO();
     $("srcBWrap").hidden = !S.builtInBank; if (!S.builtInBank) $("srcU").checked = true;
@@ -519,10 +519,10 @@
   function paintResults() { paintOwn(); }                         // my quiz results + my Firebase (on the Quiz Results page)
   function analyticsTiles() {                                       // the numbers of the dashboard (also used for the PDF report)
     var st = stats(), hist = history(), names = hist.reduce(function (n, r) { return n + (r.resultsCount || 0); }, 0), since = startDateISO();
-    var kbBooks = kbMeta.reduce(function (n, m) { return n + Object.keys(m.books || {}).length; }, 0), langs = st.langs || [];
+    var kbBooks = kbList().reduce(function (n, m) { return n + Object.keys(m.books || {}).length; }, 0), langs = st.langs || [];
     var days = Math.max(0, Math.floor((Date.now() - new Date(since).getTime()) / 86400000));
     return [["aSince", fmtDate(since.slice(0, 10)), "date"], ["aDays", days], ["aQuizzes", st.quizzes || 0], ["aFinished", hist.length], ["aParts", st.participants || 0], ["aLangs", langs.length],
-      ["aQs", st.questions || 0], ["aPdf", st.pdfs || 0], ["aPeople", names], ["aSaved", setups.length], ["aBankMine", bankChoices().reduce(function (n, b) { return b.kind === "builtin" ? n : n + b.count; }, 0)], ["aBankBuilt", starter().length], ["aKbTexts", kbMeta.length], ["aKbBooks", kbBooks]];
+      ["aQs", st.questions || 0], ["aPdf", st.pdfs || 0], ["aPeople", names], ["aSaved", setupList().length], ["aBankMine", bankChoices().reduce(function (n, b) { return b.kind === "builtin" ? n : n + b.count; }, 0)], ["aBankBuilt", starter().length], ["aKbTexts", kbList().length], ["aKbBooks", kbBooks]];
   }
   function paintAnalytics() {
     Array.prototype.forEach.call(document.querySelectorAll("#panelActivity .langlist"), function (n) { n.remove(); });
