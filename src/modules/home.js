@@ -1,4 +1,4 @@
-/* @module {"name":"home","exports":["icon","goHomePage","showWelcome","openResults","openAnalytics","openBuilder","openAdmin","openMyQuizzes","paintHome","runDemo","openLite","wireHome"],"uses":["$","ALL_BOOKS","PANEL_ROUTE","ROUNDS_SAMPLE","S","T","VERSE_OF_THE_DAY","VERSE_OF_THE_DAY_SOURCE","VERSE_THEME_NAMES","adminLoad","bank","bankChoices","beginWith","buildPool","clear","codeOfEnglish","el","exportAnalytics","fbConfigured","finalizeRounds","goSetup","history","isAdmin","kbHas","kbList","kbLoadMerged","langInfo","langOptions","lsGet","lsSet","normName","offlineMode","onBegin","openAbout","openQmGuide","openSettings","ownConnected","paintAnalytics","paintBuilder","paintInstall","paintResults","pickLang","quizLang","refreshVoicePickers","routing","scopeCodes","setUi","setUrl","setupList","show","speechOK","startQuiz","stats","stopSpeech","stopTimer","todayISO","track","ui","useSetup","user","verseArt"]} */
+/* @module {"name":"home","exports":["icon","goHomePage","showWelcome","openResults","openAnalytics","openBuilder","openAdmin","openMyQuizzes","paintHome","runDemo","openLite","wireHome","paintLite","startGuestDemo"],"uses":["$","ALL_BOOKS","PANEL_ROUTE","ROUNDS_SAMPLE","S","T","VERSE_OF_THE_DAY","VERSE_OF_THE_DAY_SOURCE","VERSE_PACKS","VERSE_THEME_NAMES","adminLoad","bank","bankChoices","beginWith","buildPool","clear","codeOfEnglish","el","exportAnalytics","fbConfigured","finalizeRounds","goSetup","history","isAdmin","kbHas","kbList","kbLoadMerged","langInfo","langOptions","lsGet","lsSet","normName","offlineMode","onBegin","openAbout","openQmGuide","openSettings","ownConnected","paintAnalytics","paintBuilder","paintInstall","paintResults","pickLang","quizLang","refreshVoicePickers","routing","scopeCodes","setUi","setUrl","setupList","show","signOut","speechOK","startQuiz","stats","stopSpeech","stopTimer","todayISO","track","ui","useSetup","user","verseArt"]} */
 
   /* =====================================================================
      HOME PAGE, VERSE OF THE DAY, OBQ LITE (quick quiz) and the DEMO CONTEST
@@ -36,6 +36,7 @@
   /* ---------- opening pages ---------- */
   function goHomePage() {
     stopTimer(); stopSpeech();
+    if (user && user.guest) { signOut(); return; }                       // the guest of the Demo Contest goes back to the sign-in page
     if (S.edition === "basic") { if (user && user.name) openLite(); else showWelcome(); return; }          // the basic version has no Home page: its start is the quick-quiz page
     paintHome(); show("home"); setUrl("");
   }
@@ -86,7 +87,7 @@
     { id: "run",     title: "hGroupRun",  items: ["lite", "demo", "setup", "saved"] },
     { id: "builder", title: "hBuilder",   desc: "hBuilderD", box: true, head: "builder", icon: "tools", headGo: function () { openBuilder(""); }, items: ["bank", "kb"] },
     { id: "results", title: "hGroupResults", desc: "hGroupResultsD", box: true, head: "resultshead", icon: "chart", headGo: function () { openResults(); }, items: ["results", "firebase"] },
-    { id: "more",    title: "hGroupMore", cols: 3, items: ["analytics", "settings", "help", "about", "admin"] }
+    { id: "more",    title: "hGroupMore", cols: 2, items: ["analytics", "settings", "help", "about", "admin"] }
   ];
   function homeItemOK(id, li) { var it = HOME_ITEMS[id]; return !((li && !it.lite) || (it.adminOnly && !isAdmin)); }
   function homeCard(id) {
@@ -198,30 +199,98 @@
     }
     return parts.join(" ");
   }
-  function showVerse(text, ref, src) { $("votdText").textContent = text; $("votdRef").textContent = ref; $("votdSrc").textContent = src ? " - " + src : ""; $("votdBox").classList.toggle("rtl", /[\u0590-\u08FF]/.test(text)); }
+  function showVerse(text, ref, src, copy, note) {
+    $("votdText").textContent = text; $("votdRef").textContent = ref; $("votdSrc").textContent = src ? " - " + src : ""; $("votdBox").classList.toggle("rtl", /[\u0590-\u08FF]/.test(text));
+    $("votdCopy").textContent = copy || ""; $("votdCopy").hidden = !copy; $("votdNote").textContent = note || ""; $("votdNote").hidden = !note;
+  }
+  function votdPack(code) { var p = VERSE_PACKS && VERSE_PACKS[code]; return p && p.v ? p : null; }
   function paintVerseArt(theme) {                                   // the picture that goes with the verse (the owner can supply own images in "verseImages")
     var box = $("votdArt"), own = S.verseImages && S.verseImages[theme];
     box.innerHTML = own ? '<img alt="" src="' + String(own).replace(/"/g, "&quot;") + '">' : verseArt(theme);
     box.setAttribute("aria-label", VERSE_THEME_NAMES[theme] || "");
   }
-  function paintVerse() {
-    var v = VERSE_OF_THE_DAY[votdIndex()], ref = v[0] + " " + v[1] + ":" + v[2] + (v[3] > v[2] ? "-" + v[3] : "");
-    paintVerseArt(v[5] || "sunrise");
-    showVerse("\u201C" + v[4] + "\u201D", ref, VERSE_OF_THE_DAY_SOURCE);
-    if (!kbList().some(function (m) { return m.lang === ui; })) return;                          // a Bible text in the interface language: show the verse from it
-    var idx = votdIndex(), key = ui + "|" + idx, code = codeOfEnglish(v[0]), meta = kbList().filter(function (m) { return m.lang === ui; })[0];
-    function put(hit) {
-      if (!hit || votdIndex() !== idx) return;
-      var shown = ((hit.book && hit.book.n) || v[0]) + " " + v[1] + ":" + v[2] + (v[3] > v[2] ? "-" + v[3] : "");
-      showVerse("\u201C" + hit.text + "\u201D", shown, meta.name);
+  /* ---------- the verse from Bible Brain, in the interface language (ESV in English, IRV in the Indian languages) ---------- */
+  var VOTD_ISO = { en: ["eng"], hi: ["hin"], ml: ["mal"], or: ["ory", "ori"], ta: ["tam"], te: ["tel"], pa: ["pan"], bn: ["ben"], ne: ["npi", "nep"], ur: ["urd"], mr: ["mar"] };
+  var VOTD_API = "https://4.dbt.io/api/", VOTD_DAYS = 30 * 86400000;
+  function votdGet(path, params) {
+    var q = ["v=4", "key=" + encodeURIComponent(S.bibleBrainKey)]; Object.keys(params || {}).forEach(function (n) { q.push(n + "=" + encodeURIComponent(params[n])); });
+    return fetch(VOTD_API + path + "?" + q.join("&")).then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); });
+  }
+  function votdCandidates(lang) {                                   // the text filesets to try, best first: the ESV for English, the IRV for the other languages
+    var all = lsGet("qms.votdFs", {}), hit = all[lang];
+    if (hit && Date.now() - hit.ts < VOTD_DAYS && hit.c && hit.c.length) return Promise.resolve(hit.c);
+    var codes = (VOTD_ISO[lang] || []).slice();
+    function next() {
+      if (!codes.length) return Promise.resolve([]);
+      return votdGet("bibles", { language_code: codes.shift(), limit: 200 }).then(function (j) {
+        var list = [];
+        ((j && j.data) || []).forEach(function (b) {
+          var fs = b.filesets, arr = Array.isArray(fs) ? fs : Object.keys(fs || {}).reduce(function (a, k) { return a.concat(fs[k] || []); }, []);
+          arr.forEach(function (f) {
+            if (!f || !f.id || !/^text_(plain|format)$/i.test(f.type || "")) return;
+            var tag = [b.abbr, b.name, b.vname, f.id].join(" "), pref = lang === "en" ? /ESV/i.test(tag) : /IRV|Indian Revised/i.test(tag);
+            list.push({ id: f.id, name: b.vname || b.name || b.abbr || f.id, tag: tag, rank: (pref ? 0 : 10) + (/^C/i.test(f.size || "") ? 0 : 3) + (/plain/i.test(f.type) ? 0 : 1) });
+          });
+        });
+        list.sort(function (a, b) { return a.rank - b.rank; });
+        if (!list.length) return next();
+        var c = list.slice(0, 4).map(function (x) { return { id: x.id, name: x.name, credit: lang === "en" ? (/ESV/i.test(x.tag) ? "esv" : "") : (/IRV|Indian Revised/i.test(x.tag) ? "irv" : "") }; });
+        all[lang] = { ts: Date.now(), c: c }; lsSet("qms.votdFs", all); return c;
+      });
     }
-    if (votdCache[key] !== undefined) { put(votdCache[key]); return; }
-    kbLoadMerged(ui).then(function (books) {
-      var t = kbVerse(books, code, v[1], v[2], v[3]); votdCache[key] = t ? { text: t, book: books[code] } : null; put(votdCache[key]);
-    }).catch(function () {});
+    return next();
+  }
+  function votdFromBb(lang, code, ch, v1, v2) {                      // { text, book, name, credit } or null
+    return votdCandidates(lang).then(function (cands) {
+      function tryOne(k) {
+        if (k >= cands.length) return null;
+        return votdGet("bibles/filesets/" + encodeURIComponent(cands[k].id) + "/" + code + "/" + ch, { verse_start: v1, verse_end: v2 }).then(function (j) {
+          var rows = ((j && j.data) || []).filter(function (r) { var n = parseInt(r.verse_start, 10); return n >= v1 && n <= v2 && r.verse_text; });
+          if (!rows.length) return tryOne(k + 1);
+          return { text: rows.map(function (r) { return String(r.verse_text).trim(); }).join(" "), book: rows[0].book_name || "", name: cands[k].name, credit: cands[k].credit };
+        }).catch(function () { return tryOne(k + 1); });
+      }
+      return tryOne(0);
+    });
+  }
+  function votdSaved(lang, ref) { var m = lsGet("qms.votdTxt", {})[lang + "|" + ref]; return m && Date.now() - m.ts < 365 * 86400000 ? m : null; }
+  function votdSave(lang, ref, hit) {
+    var m = lsGet("qms.votdTxt", {}), ks = Object.keys(m); if (ks.length > 300) ks.sort(function (a, b) { return m[a].ts - m[b].ts; }).slice(0, 60).forEach(function (k) { delete m[k]; });
+    m[lang + "|" + ref] = { ts: Date.now(), text: hit.text, book: hit.book, name: hit.name, credit: hit.credit }; lsSet("qms.votdTxt", m);
+  }
+  function paintVerse() {
+    var v = VERSE_OF_THE_DAY[votdIndex()], span = v[2] + (v[3] > v[2] ? "-" + v[3] : ""), ref = v[0] + " " + v[1] + ":" + span, code = codeOfEnglish(v[0]), idx = votdIndex(), lang = ui;
+    paintVerseArt(v[5] || "sunrise");
+    var en = votdPack("en"), base = en && en.v[ref] ? { text: en.v[ref], src: en.name, copy: en.copyright } : { text: v[4], src: VERSE_OF_THE_DAY_SOURCE, copy: "" };
+    var pk = lang !== "en" ? votdPack(lang) : null, own = pk && pk.v[ref] ? { text: pk.v[ref], src: pk.name, copy: pk.copyright, book: pk.b && pk.b[code] } : null;
+    var meta = kbList().filter(function (m) { return m.lang === lang; })[0];
+    function same() { return votdIndex() === idx && ui === lang; }
+    function showBb(h) { showVerse("\u201C" + h.text + "\u201D", (h.book || v[0]) + " " + v[1] + ":" + span, h.name, (S.votdCredits && S.votdCredits[h.credit]) || "", ""); }
+    function fallback(withNote) {                                      // the Quiz Master's own Bible text, then the built-in texts, then English with a note
+      var first = own || base, shown = (own && own.book ? own.book : v[0]) + " " + v[1] + ":" + span;
+      var note = withNote && lang !== "en" && !own && !meta ? T("votdNoLang", { lang: langInfo(lang).native }) : "";
+      showVerse("\u201C" + first.text + "\u201D", shown, first.src, first.copy, note);
+      if (!meta) return;
+      var key = lang + "|" + idx;
+      function put(hit) { if (hit && same()) showVerse("\u201C" + hit.text + "\u201D", ((hit.book && hit.book.n) || v[0]) + " " + v[1] + ":" + span, meta.name, "", ""); }
+      if (votdCache[key] !== undefined) { put(votdCache[key]); return; }
+      kbLoadMerged(lang).then(function (books) { var t = kbVerse(books, code, v[1], v[2], v[3]); votdCache[key] = t ? { text: t, book: books[code] } : null; put(votdCache[key]); }).catch(function () {});
+    }
+    if (!S.bibleBrainKey || !VOTD_ISO[lang] || !code) { fallback(true); return; }
+    var saved = votdSaved(lang, ref); if (saved) { showBb(saved); return; }                       // fetched before: shown at once, also without internet
+    fallback(false);                                                                               // shown while the verse is fetched
+    if (navigator.onLine === false) { fallback(true); return; }
+    votdFromBb(lang, code, v[1], v[2], v[3]).then(function (hit) {
+      if (!same()) return;
+      if (hit) { votdSave(lang, ref, hit); showBb(hit); } else fallback(true);
+    }).catch(function () { if (same()) fallback(true); });
   }
 
   /* ---------- Demo contest: the 10-question sample, one tap ---------- */
+  function guestProfile() { return { email: "guest@demo.local", name: "", org: "", country: "", usage: "", consent: false, terms: S.termsVersion, skipped: true, guest: true }; }
+  function startGuestDemo() {                                          // the Demo Contest before signing in: nothing is saved, and the Home button leads back to the sign-in page
+    user = guestProfile(); $("uname").textContent = ""; $("tbRight").hidden = true; runDemo();
+  }
   function runDemo() {
     var c = { qm: (user && user.name) || "", event: T("srcSample"), date: todayISO(), parts: 1, uiLang: ui, quizLang: "en", quizLangLabel: "English", mode: "individual", style: "normal",
               scope: "any", books: [], numQ: ROUNDS_SAMPLE.length, source: "sample", sample: true, saveResults: false };

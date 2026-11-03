@@ -1,4 +1,4 @@
-/* @module {"name":"contact","exports":["openAbout","wireAbout"],"uses":["$","QUIZ_I18N","S","T","clear","el","fb","goHomePage","loadScript","lsDel","lsGet","lsSet","openQmGuide","openTerms","routeUrl","setUrl","show","track","ui","user"]} */
+/* @module {"name":"contact","exports":["openAbout","wireAbout","paintAbout"],"uses":["$","QUIZ_I18N","S","T","clear","el","fb","goHomePage","loadScript","lsDel","lsGet","lsSet","openQmGuide","openTerms","routeUrl","setUrl","show","track","ui","user"]} */
   /* ABOUT and CONTACT. A code or a limit checked only inside the page can be bypassed, so the checks are made by a server or by the database rules.
      provider "firebase" (works on the free Spark plan, no server): 1. "Email me a confirmation link": Firebase emails a one-time sign-in link to the address of the signed-in
      ACCOUNT (never to an address typed here); opening it signs the person in again and brings them back here. 2. "Send message": the database rules accept the message only

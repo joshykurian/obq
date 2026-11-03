@@ -10,7 +10,7 @@ def run(t):
     cl = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8").read(); top = re.search(r"^## v([0-9.]+)", cl, re.M).group(1)    # 2. one version number everywhere
     ver = re.search(r'appVersion:\s*"([0-9.]+)"', open(os.path.join(ROOT, "src", "cfg1.js"), encoding="utf-8").read()).group(1)
     ok("version in cfg1 (%s) matches the newest CHANGELOG entry (%s)" % (ver, top), ver == top)
-    found = sorted(set(re.findall(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}", idx))); ok("no real email address in the built app (only %s)" % (found,), all(e.split("@")[1] in ("skip.local", "example.org", "example.com") for e in found))       # 3. nothing private in the build
+    found = sorted(set(re.findall(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}", idx))); ok("no real email address in the built app (only %s)" % (found,), all(e.split("@")[1] in ("skip.local", "demo.local", "example.org", "example.com") for e in found))       # 3. nothing private in the build
     pub = os.path.join(ROOT, "private")
     ok("the page size stays small (under 2.6 MB)", len(idx) < 2.6 * 1024 * 1024, "%d KB" % (len(idx) // 1024))
     sw = open(os.path.join(d, "obq-app", "sw.js"), encoding="utf-8").read()                  # 4. the offline cache holds what offline work needs

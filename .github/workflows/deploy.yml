@@ -44,9 +44,14 @@ jobs:
         env: { SITE: "${{ secrets.SITE_CONFIG_JSON }}" }
         run: |
           if [ -n "$SITE" ]; then mkdir -p private && printf '%s' "$SITE" > private/site.config.json; fi
+      # Optional secrets BIBLE_BRAIN_KEY and VERSE_BIBLES_JSON: the Verse of the Day texts (English ESV and the interface languages) are fetched from Bible Brain while building. See README.
+      - name: Verse of the Day texts (optional)
+        env: { BIBLE_BRAIN_KEY: "${{ secrets.BIBLE_BRAIN_KEY }}", VERSE_BIBLES_JSON: "${{ secrets.VERSE_BIBLES_JSON }}" }
+        run: |
+          if [ -n "$BIBLE_BRAIN_KEY" ] && [ -n "$VERSE_BIBLES_JSON" ]; then mkdir -p private && python tools/fetch_verses.py; else echo "No verse secrets: the English verses are the King James text"; fi
       - run: pip install cryptography
       - name: Build
-        env: { OBQ_BANK_KEY: "${{ secrets.OBQ_BANK_KEY }}" }
+        env: { OBQ_BANK_KEY: "${{ secrets.OBQ_BANK_KEY }}", OBQ_BIBLE_BRAIN_KEY: "${{ secrets.BIBLE_BRAIN_KEY }}" }
         run: |
           python tools/make_template.py
           python tools/assemble.py

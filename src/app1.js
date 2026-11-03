@@ -412,7 +412,7 @@
     [["formIn", "btnIn"], ["formUp", "btnUp"]].forEach(function (p) {
       $(p[0]).addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); $(p[1]).click(); } });
     });
-    $("skipLogin").hidden = !S.skipLoginButton;
+    $("skipLogin").hidden = !S.skipLoginButton; $("demoGuestBox").hidden = S.requireLogin === false; $("demoGuest").addEventListener("click", startGuestDemo);
     $("skipLogin").addEventListener("click", function () { lsSet("qms.session", "skip"); onLogin(skipProfile(), false); });
     $("forgotBtn").addEventListener("click", function () {
       var email = normName($("inEmail").value);

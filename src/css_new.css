@@ -291,3 +291,5 @@
   .howkey ol { margin: 6px 0 10px; padding-inline-start: 1.4em; line-height: 1.55; }
   .howkey h3 { margin: 0 0 4px; }
   .fgrid .field.wide { grid-column: 1 / -1; } .fgrid .field.wide select { width: 100%; }
+  .demoguest { display: flex; flex-direction: column; gap: 4px; align-items: stretch; margin-top: 10px; text-align: center; }
+  .demoguest small { color: var(--muted); }

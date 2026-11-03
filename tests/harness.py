@@ -50,6 +50,14 @@ class Page:
         if dismiss and p.is_visible("#anModal"): p.click("#anDeny"); p.wait_for_timeout(150)
     def stub_excel(self, rows):                                              # the real Excel reader comes from the internet: a stand-in that returns these rows
         self.pg.evaluate("window.__ROWS=%s; %s" % (json.dumps(rows, ensure_ascii=False), open(os.path.join(FIX, "xlsx_stub.js"), encoding="utf-8").read()))
+    def play_to_end(self):                                                   # answers every question of the quiz that is showing (the first name gets the points) and waits for the final page
+        p = self.pg; n = p.evaluate("document.querySelectorAll('#segs .seg').length")
+        for i in range(n):
+            for _ in range(12):
+                p.keyboard.press("PageDown"); p.wait_for_timeout(8)
+                if p.evaluate("document.getElementById('game').classList.contains('answered')"): break
+            p.fill("#nameIn", "Team A" if i % 3 else "Team B"); p.keyboard.press("Enter"); p.wait_for_timeout(12); p.keyboard.press("PageDown"); p.wait_for_timeout(15)
+        p.wait_for_function("document.body.dataset.screen==='end'", timeout=15000); return n
     def run_lite_quiz(self, name="Test quiz"):
         p = self.pg
         if self.screen() != "lite": p.click("[data-card=lite]"); p.wait_for_timeout(300)

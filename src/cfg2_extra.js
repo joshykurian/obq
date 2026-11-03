@@ -542,3 +542,10 @@ Object.assign(QUIZ_I18N.en, {
   trHow_libre_1: "Use a LibreTranslate server that you run yourself (free software; see libretranslate.com) or one that you are allowed to use. Public servers may ask for a paid key.",
   trHow_libre_2: "Type the server address (starting with https://) in the box above. Type a key only if the server asks for one."
 });
+
+/* the Demo Contest before sign-in, and the verse of the day in the interface language */
+Object.assign(QUIZ_I18N.en, {
+  authDemo: "Try the Demo Contest (no sign-in)", authDemoNote: "No account needed. Nothing is saved.",
+  guestEnd: "This was the demo. Create a free account to set up your own quizzes, save your results and more.",
+  votdNoLang: "This verse is shown in English. To see it in {lang}, add a Bible text in {lang} (Quiz Builder, then Bible Knowledge Base)."
+});

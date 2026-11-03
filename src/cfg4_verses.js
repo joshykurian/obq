@@ -6,6 +6,9 @@
    shown from that text instead. Add or reorder verses freely.
    ===================================================================== */
 var VERSE_OF_THE_DAY_SOURCE = "King James Version";
+/* Verse texts in the interface languages and the English text from a Bible you are licensed to use (for example the ESV): they are NOT typed here, they are fetched
+   from Bible Brain when the app is built:  python tools/fetch_verses.py  (see README). Shape: { en: { name, copyright, b: { JHN: "John" }, v: { "John 3:16": "..." } }, hi: {...} } */
+var VERSE_PACKS = /*@VERSE_PACKS*/{};
 var VERSE_OF_THE_DAY = [
   ["John", 3, 16, 16, "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.", "cross"],
   ["Psalms", 23, 1, 1, "The LORD is my shepherd; I shall not want.", "shepherd"],

@@ -245,6 +245,7 @@
      START UP
      ===================================================================== */
   function repaintStatic() {
+    repaintScreen();
     paintSelects(); paintBankInfo(); paintSoundLabel(); paintTimer(); paintFs();
     if ($("dashboard").classList.contains("active") || $("resultsPage").classList.contains("active") || $("analytics").classList.contains("active")) paintDashboard();
     if ($("game").classList.contains("active")) paintRound();

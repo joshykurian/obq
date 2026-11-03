@@ -515,7 +515,8 @@
     photoReset();                                                       // a new final page: the photo box starts empty
     var basic = S.edition === "basic";
     $("csvBtn").hidden = basic || !curRecord; $("saveCloud").hidden = basic || !(curRecord && ownConnected()); $("endHome").hidden = basic;
-    $("saveRedo").hidden = basic || !(cfg && !cfg.sample); markClearSetup();           // the next time the setup page opens it starts empty (name kept)
+    $("saveRedo").hidden = basic || !(cfg && !cfg.sample); markClearSetup();
+    var guest = !!(user && user.guest); $("guestEnd").hidden = !guest; $("again").hidden = guest;           // the next time the setup page opens it starts empty (name kept)
     show("end"); if (curRecord && cfg.saveResults && ownConnected()) sendRecord(curRecord); if (list.length) { burst(80); chime(); }
   }
   function burst(n) {

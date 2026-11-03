@@ -14,7 +14,16 @@
 - **Checks in the repository** (`tests/`, `functions/test/`, GitHub Action): build, version, translations (the number of translated texts cannot fall), accessibility, offline, banks, translation, sharing, contact, privacy, notices, server functions, rules. The site is published only when they pass. See `CONTRIBUTING.md`.
 - **Modules** (`src/modules/`, `tools/check_modules.js`, `tools/modularize.js`): new code and the files for art, photo, sharing, translation and **question banks** **settings, home, Bible knowledge base and saved set-ups** are modules with declared dependencies; the number of names in the shared scope can only go down (384 names, 2,389 lines are left in 6 older files: `app1`, `app2`, `app3`, `app4`, `app_own`, `app_router`).
 
+### Added (later in 1.10.0)
+- **Demo Contest before sign-in:** the sign-in page has **Try the Demo Contest (no sign-in)**. The 10-question demo runs without an account, nothing is saved, the final page invites the guest to create an account, and Home leads back to the sign-in page.
+- **Verse of the Day from Bible Brain, in the interface language:** with a Bible Brain key (secret `BIBLE_BRAIN_KEY` or `bibleBrainKey` in the site settings) the verse is fetched when the language changes: the **ESV** in English and the **Indian Revised Version (IRV, CC BY-SA 4.0)** in the ten Indian languages, with the Bible's own book name and a credit line. The Bible and fileset are found through the API (the IRV and the complete Bible are preferred, other codes of the language are tried), a fetched verse is kept on the device and works without internet, and without a result the Quiz Master's own Bible text, then the English King James text with a note, are shown. The Terms mention the request. `tools/fetch_verses.py` can pre-load texts into the build (`private/verses.json`) as an offline fallback.
+
+### Changed (later in 1.10.0)
+- **Account and help** on Home is now 2 columns x 2 rows.
+- The README is now a short feature overview with set-up; the release history is only here.
+
 ### Fixed
+- **Changing the interface language (top bar or sign-in page) now repaints the page that is showing at once** (Home with its verse, Settings, About, Quick Quiz, Quiz Builder, Results, Analytics, My Quizzes). Before, parts of these pages stayed in the old language until another page was opened.
 - **Keyboard focus stays inside pop-ups**, and returns to what opened them.
 - **Offline:** the Excel reader, the sign-in libraries and the fonts are saved when the app is installed; Settings shows the state; a clear message when the Excel reader cannot load.
 - The Firebase config text box had no label for screen readers.

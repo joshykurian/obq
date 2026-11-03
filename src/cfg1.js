@@ -10,6 +10,11 @@ var QUIZ_SETTINGS = {
   edition: "full",                    // "full" = all features on the Home page. "lite" = OBQ Lite edition: only the quick quiz, the demo contest and the instructions
   requireLogin: true,                 // true = Quiz Masters must sign up / sign in first
   requireTerms: true,                 // true = new accounts must accept the Terms and Conditions (which include the analytics notice); existing accounts accept again when termsVersion changes
+  bibleBrainKey: "",                  // optional: a Bible Brain API key (set in private/site.config.json or the env OBQ_BIBLE_BRAIN_KEY, never typed here). With it the Verse of the Day is fetched from Bible Brain in the interface language: the ESV in English and the IRV (Creative Commons) in the Indian languages. The key is visible in the page: use a key made for this app.
+  votdCredits: {                      // shown under a verse fetched from Bible Brain; check each wording against the licence of the Bible
+    esv: "Scripture quotations are from the ESV\u00AE Bible (The Holy Bible, English Standard Version\u00AE), \u00A9 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.",
+    irv: "Indian Revised Version (IRV), licensed under Creative Commons CC BY-SA 4.0 (creativecommons.org/licenses/by-sa/4.0), through Bible Brain."
+  },
   verseImages: {},                    // optional: your own pictures for the Verse of the Day, as theme name -> image address, for example { cross: "pictures/cross.jpg" } (themes: cross, shepherd, book, stars, path, lamp, hills, tower, wings, globe, dove, sunrise, tree, door)
   appVersion: "1.10.0",                // sent with the optional "Share my analytics" snapshot, so the developers know which version it came from
   termsVersion: "2026-12",            // the version of src/terms.html that new accounts accept at sign-up (stored with the account)

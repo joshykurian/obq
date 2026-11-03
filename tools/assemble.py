@@ -43,10 +43,21 @@ TR_FILES = sorted(f for f in os.listdir(SRC) if re.match(r"cfg2_tr_.*\.js$", f))
 cfg = "\n".join([rd(n) for n in ["cfg1.js", "cfg2_en.js", "cfg2_hi_ml.js", "cfg2_or_ta.js", "cfg2_te_pa_bn.js", "cfg2_ne_ur_mr.js", "cfg2_extra.js"] + TR_FILES + ["cfg3.js"]] + [bank_src, rd("cfg4_verses.js")])
 if bank_src != rd("cfg3_bank.js"):                                  # the full bank is built in: the small sample stays available as the OBQ Starter set
     cfg += "\n" + rd("cfg3_bank.js").replace("var STARTER_BANK", "var SAMPLE_BANK", 1)
+# Verse of the Day texts in the interface languages and the English ESV (or another licensed text): fetched from Bible Brain by tools/fetch_verses.py into private/verses.json
+# (or given as the env variable OBQ_VERSES_JSON). They are never typed into the source or committed. Without them the English verse is the public-domain King James text.
+_vp = os.path.join(PRIV, "verses.json"); _vraw = open(_vp, encoding="utf-8").read() if os.path.exists(_vp) else os.environ.get("OBQ_VERSES_JSON", "")
+if _vraw.strip():
+    _vd = json.loads(_vraw); assert isinstance(_vd, dict) and all(isinstance(v, dict) and isinstance(v.get("v"), dict) for v in _vd.values()), "verses.json: expected {lang: {name, copyright, b, v: {ref: text}}}"
+    cfg = cfg.replace("/*@VERSE_PACKS*/{}", json.dumps(_vd, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"), 1)
+    print("verse of the day: texts for " + ", ".join(sorted(_vd)) + " (" + ", ".join("%s: %d verses" % (k, len(v["v"])) for k, v in sorted(_vd.items())) + ")")
+_bbk = os.environ.get("OBQ_BIBLE_BRAIN_KEY", "").strip()
+if _bbk: cfg = re.sub(r'(bibleBrainKey: )"[^"]*"', lambda m: m.group(1) + json.dumps(_bbk), cfg, count=1); print("Verse of the Day: fetched from Bible Brain (key from OBQ_BIBLE_BRAIN_KEY)")
 site_file = os.path.join(PRIV, "site.config.json")           # optional: {"operatorName": "...", "contactEmail": "...", "announcement": {"title": "...", "text": "...", "date": "2026-12-01", "linkText": "...", "linkUrl": "https://..."}}
 if os.path.exists(site_file):
     import json as _s
     site = _s.load(open(site_file, encoding="utf-8"))
+    if site.get("bibleBrainKey") and not _bbk:
+        cfg = re.sub(r'(bibleBrainKey: )"[^"]*"', lambda m: m.group(1) + _s.dumps(str(site["bibleBrainKey"])), cfg, count=1); print("Verse of the Day: fetched from Bible Brain (key from private/site.config.json)")
     for k in ("operatorName", "contactEmail"):
         if site.get(k): cfg = re.sub(r"(%s: )\"[^\"]*\"" % k, lambda m: m.group(1) + _s.dumps(str(site[k])), cfg, count=1)
     ct = {k: str(site[n]) for k, n in (("provider", "contactProvider"), ("region", "contactRegion")) if site.get(n)}

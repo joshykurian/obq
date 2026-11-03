@@ -56,6 +56,7 @@
         <button class="primary" type="button" id="btnUp" data-i18n="btnUp"></button>
       </div>
       <button class="ghost" id="skipLogin" type="button" hidden data-i18n="skipLogin"></button>
+      <div class="demoguest" id="demoGuestBox"><button class="ghost" id="demoGuest" type="button" data-i18n="authDemo"></button><small class="note" data-i18n="authDemoNote"></small></div>
       <div class="authform" id="authOffline" hidden>
         <h2 class="gh" data-i18n="fbDownTitle"></h2>
         <p data-i18n="fbDown"></p>
@@ -125,6 +126,8 @@
           <h2 class="gh" data-i18n="votdTitle"></h2>
           <blockquote id="votdText"></blockquote>
           <div class="votdref"><b id="votdRef"></b><small id="votdSrc"></small></div>
+          <small class="note" id="votdCopy" hidden></small>
+          <p class="note" id="votdNote" hidden></p>
           <div class="row"><button class="ghost sm" id="votdNext" type="button" data-i18n="votdNext"></button></div>
         </div>
       </div>
@@ -665,6 +668,7 @@
       <p class="verse" id="verseText"></p>
       <div class="verse-ref" id="verseRef"></div>
     </div>
+    <p class="aiwarn" id="guestEnd" role="note" hidden data-i18n="guestEnd"></p>
     <div class="row">
       <button class="primary" id="again" type="button" data-i18n="newQuiz"></button>
       <button class="ghost" id="saveRedo" type="button" hidden data-i18n="saveRedo"></button>
